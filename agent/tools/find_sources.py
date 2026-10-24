@@ -32,7 +32,6 @@ def find_sources(topic: str, max_results: int = 8) -> list[dict]:
         query=query,
         num_results=max_results,
         type="auto",
-        use_autoprompt=True,
         text={"max_characters": 500},
     )
 
