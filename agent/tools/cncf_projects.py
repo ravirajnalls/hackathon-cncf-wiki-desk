@@ -73,6 +73,14 @@ GENERIC_REPO_NAMES = {"policy", "operator", "server", "core", "api", "docs", "pr
                       "pack", "serving", "hub", "pipeline", "build", "kube", "slim", "spin"}
 
 
+# Subprojects that live under a CNCF project but aren't listed in the landscape on their own
+SUBPROJECTS = {
+    "Kubernetes": {"agent sandbox", "gateway api", "cluster api", "kueue", "kustomize", "kind",
+                   "jobset", "leaderworkerset", "karpenter", "kwok", "kubectl", "kubelet"},
+    "Argo": {"argo cd", "argocd", "argo workflows", "argo rollouts", "argo events"},
+}
+
+
 def match_projects(topic: str) -> list[dict]:
     """CNCF projects named in the topic, best match first."""
     t = f" {_norm(topic)} "
@@ -84,6 +92,7 @@ def match_projects(topic: str) -> list[dict]:
             repo_name = _norm(p["repo"].rstrip("/").split("/")[-1])
             if repo_name not in GENERIC_REPO_NAMES:
                 names.add(repo_name)
+        names |= SUBPROJECTS.get(p["name"], set())
         names = {n for n in names if len(n) >= 3}
         if any(f" {n} " in t for n in names):
             hits.append(p)
