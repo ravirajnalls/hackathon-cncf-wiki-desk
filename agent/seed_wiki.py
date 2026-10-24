@@ -73,8 +73,9 @@ CNCF project(s): {projects}
 {style_guide_text()}
 5. CONNECT: add or update the line for this page in wiki/index.md:
      "- [Title](concepts/{slug}.md) — summary"
-   and add a bullet linking it under a "## Related pages" section at the end of wiki/{HUB}
-   (create the section if missing; keep one bullet per page).
+   If the topic relates to AI agents or sandboxing, also add a bullet linking it under a
+   "## Related pages" section at the end of wiki/{HUB} (create the section if missing; keep one
+   bullet per page). Otherwise leave the hub alone.
 
 6. CHECK + PUBLISH:
      python -m agent.tools.verify_citations
