@@ -29,7 +29,7 @@ from agent.tools.poll_orders import poll_orders as whop_poll, get_checkout_answe
 from agent.claude_runner import run_claude
 from agent.tools.run_terac_study import style_guide_text
 from agent.tools.compile_pages import _slugify
-from agent.tools.publish_wiki import get_page_url, get_source_url
+from agent.tools.publish_wiki import get_order_page_url, get_order_source_url, order_page_path
 from agent.tools.cncf_projects import CHECKOUT_OPTIONS, match_projects
 
 
@@ -74,8 +74,9 @@ def build_fulfillment_prompt(order: dict) -> str:
     created_at = order.get("created_at", "")
     product_id = os.environ.get("WHOP_PRODUCT_ID", "prod_65oqcxlhZM93U")
     slug = _slugify(topic) if topic else ""
-    page_url = get_page_url(slug) if topic else ""
-    source_url = get_source_url(slug) if topic else ""
+    page_path = order_page_path(whop_id, slug) if topic else ""
+    page_url = get_order_page_url(whop_id, slug) if topic else ""
+    source_url = get_order_source_url(whop_id, slug) if topic else ""
 
     if not topic:
         return f"""You are fulfilling a CNCF Wiki Desk order via MCP tools.
@@ -137,11 +138,14 @@ For each YouTube URL found, run this shell command:
   python -c "from agent.tools.get_transcript import get_transcript; print(get_transcript('URL'))"
 This stores timestamped chunks in memory.db automatically. Skip videos that fail.
 
-STEP 3 — COMPILE WIKI PAGE
-Run this shell command to generate the wiki page:
-  python -c "from agent.tools.compile_pages import compile_pages, write_page; import json; ..."
-Or write the page directly to wiki/concepts/{slug}.md using the file tools.
-Then add or update its line in wiki/index.md: "- [Title](concepts/{slug}.md) — one-line summary".
+STEP 3 — COMPILE THIS BUYER'S PAGE
+This order gets its own page: wiki/{page_path}.md (create the folder).
+- Read wiki/index.md first. Reuse existing pages on related topics (wiki/concepts/ and earlier
+  orders under wiki/orders/) as a starting point, and link to them with relative links
+  like [Agent Sandbox on CNCF](../../concepts/agent-sandbox-on-cncf.md).
+- Do NOT edit any other page under wiki/orders/: each is a buyer's delivered copy and stays frozen.
+Then add a line under the "## Orders" section of wiki/index.md (create the section if missing):
+  "- [Title]({page_path}.md) — one-line summary (order {whop_id[:12]}, {datetime.now(timezone.utc):%Y-%m-%d})"
 
 The page MUST have:
 - YAML frontmatter: title, summary, sources, updated, clarity_score
@@ -212,7 +216,7 @@ def fulfill_order(order: dict) -> dict:
             "Asked buyer for a CNCF project",
         )
     elif result.get("status") == "fulfilled":
-        mark_delivered(whop_id, get_page_url(_slugify(topic)), cost_usd=3.0)
+        mark_delivered(whop_id, get_order_page_url(whop_id, _slugify(topic)), cost_usd=3.0)
         log_decision(
             f"Order {whop_id[:8]} fulfilled",
             f"Topic: {topic}",

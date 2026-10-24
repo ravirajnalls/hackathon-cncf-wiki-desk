@@ -56,6 +56,24 @@ def get_source_url(slug: str) -> str:
     return f"{GITHUB_REPO_URL}/blob/main/wiki/concepts/{slug}.md"
 
 
+def order_key(whop_id: str) -> str:
+    """URL-safe folder name for an order, e.g. pay_AbC123 -> pay-abc123."""
+    return "".join(c if c.isalnum() else "-" for c in whop_id.lower()).strip("-")
+
+
+def order_page_path(whop_id: str, slug: str) -> str:
+    """Each order gets its own page under wiki/orders/; later orders never change it."""
+    return f"orders/{order_key(whop_id)}/{slug}"
+
+
+def get_order_page_url(whop_id: str, slug: str) -> str:
+    return f"{get_base_url()}/{order_page_path(whop_id, slug)}/"
+
+
+def get_order_source_url(whop_id: str, slug: str) -> str:
+    return f"{GITHUB_REPO_URL}/blob/main/wiki/{order_page_path(whop_id, slug)}.md"
+
+
 def get_page_url(slug: str) -> str:
     """Public URL of a concept page on the deployed site."""
     return f"{get_base_url()}/concepts/{slug}/"

@@ -20,7 +20,7 @@ Built solo for Terac's Zero Human Company Hackathon NYC (Oct 24, 2026).
 | Scope | The topic is matched against the 231 CNCF projects in the official landscape (`agent/tools/cncf_projects.py`); anything else gets a polite reply with options |
 | Research | CNCF sources only: Exa searches the CNCF YouTube channel (KubeCon + CloudNativeCon) plus cncf.io, kubernetes.io and the project's own docs; captions are pulled with timestamps into SQLite FTS5 |
 | Build | Claude compiles a wiki page: YAML frontmatter, a `[▶ MM:SS]` citation on every claim, a Disagreements section when talks conflict |
-| Publish & deliver | Commits and pushes the wiki (GitHub Pages rebuilds the MkDocs site), then messages the buyer the link on Whop |
+| Publish & deliver | Each order gets its own frozen page at `/orders/<order id>/<topic>/`; the agent commits and pushes (GitHub Pages rebuilds the MkDocs site), then messages the buyer the page and its GitHub source link on Whop |
 | Improve with humans | Terac general-population panels rate clarity; the agent rewrites the wiki and learns writing rules from their feedback |
 | Marketing & legal | Writes landing copy, the launch post, terms, refund policy and CNCF source attribution (`output/`) |
 | Decide | Every choice is logged with reason, expectation and outcome, mirrored to `wiki/log.md` |
