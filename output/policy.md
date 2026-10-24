@@ -2,7 +2,7 @@
 
 ## Terms of Service
 
-CNCF Wiki Desk provides AI-compiled wikis on cloud-native topics. Wikis are
+Cloud Native Brain provides AI-compiled wikis on cloud-native topics. Wikis are
 generated from publicly available KubeCon talks and official documentation.
 
 By purchasing, you receive a single-use license to view and share the wiki.

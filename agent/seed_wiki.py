@@ -42,7 +42,7 @@ def topic_slug(topic: str) -> str:
 def seed_prompt(topic: str, projects: str) -> str:
     slug = topic_slug(topic)
     path = topic_page_path(topic)
-    return f"""You are the research agent for CNCF Wiki Desk, an autonomous company that sells cited
+    return f"""You are the research agent for Cloud Native Brain, an autonomous company that sells cited
 wikis on cloud-native topics. Grow the wiki around the hub page wiki/{HUB}.
 Working directory: {PROJECT_ROOT}
 
@@ -94,7 +94,7 @@ Output ONLY a JSON object at the end:
 def usage_prompt(topic: str, projects: str) -> str:
     """Backfill just the Real-world usage section of an existing page."""
     path = topic_page_path(topic)
-    return f"""You are the research agent for CNCF Wiki Desk. Working directory: {PROJECT_ROOT}
+    return f"""You are the research agent for Cloud Native Brain. Working directory: {PROJECT_ROOT}
 
 TOPIC: {topic}
 CNCF project(s): {projects}

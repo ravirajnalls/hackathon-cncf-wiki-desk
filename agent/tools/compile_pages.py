@@ -12,7 +12,7 @@ def _ensure_dirs():
     for sub in ["projects", "concepts", "patterns", "talks", "debates", "timelines"]:
         (WIKI_DIR / sub).mkdir(parents=True, exist_ok=True)
     if not INDEX_FILE.exists():
-        INDEX_FILE.write_text("# CNCF Wiki Desk — Index\n\n", encoding="utf-8")
+        INDEX_FILE.write_text("# Cloud Native Brain — Index\n\n", encoding="utf-8")
 
 
 def _read_index() -> dict[str, str]:

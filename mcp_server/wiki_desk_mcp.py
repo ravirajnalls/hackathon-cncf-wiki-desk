@@ -1,4 +1,4 @@
-"""CNCF Wiki Desk MCP server: use the wiki from inside Claude, and order new topics.
+"""Cloud Native Brain MCP server: use the wiki from inside Claude, and order new topics.
 
 Tools:
   list_topics()        every wiki page with its one-line summary
@@ -7,9 +7,9 @@ Tools:
   order_wiki(topic)    Whop checkout link to have the agent research a new topic
 
 Add to Claude Code:
-  claude mcp add wiki-desk -- uvx --with "mcp>=1.2,<2" --with requests python mcp_server/wiki_desk_mcp.py
+  claude mcp add cloud-native-brain -- uvx --with "mcp>=1.2,<2" --with requests python mcp_server/wiki_desk_mcp.py
 or, with the project requirements installed:
-  claude mcp add wiki-desk -- python mcp_server/wiki_desk_mcp.py
+  claude mcp add cloud-native-brain -- python mcp_server/wiki_desk_mcp.py
 """
 
 import os
@@ -24,7 +24,7 @@ RAW = os.environ.get("WIKI_RAW_URL",
 CHECKOUT_URL = os.environ.get("WHOP_CHECKOUT_URL", "https://whop.com/github-9154/cloud-native-wiki-on-demand")
 PRICE = os.environ.get("WHOP_PRICE_USD", "3")
 
-mcp = FastMCP("cncf-wiki-desk")
+mcp = FastMCP("cloud-native-brain")
 
 
 def _get(url: str) -> requests.Response:
@@ -51,13 +51,13 @@ def _topics() -> list[dict]:
 
 @mcp.tool()
 def list_topics() -> list[dict]:
-    """List every cloud-native topic in the CNCF Wiki Desk wiki, with a one-line summary and URL."""
+    """List every cloud-native topic in the Cloud Native Brain wiki, with a one-line summary and URL."""
     return _topics()
 
 
 @mcp.tool()
 def search_wiki(query: str, limit: int = 8) -> list[dict]:
-    """Full-text search the CNCF Wiki Desk wiki (KubeCon/CNCF talks, cited with video timestamps).
+    """Full-text search the Cloud Native Brain wiki (KubeCon/CNCF talks, cited with video timestamps).
 
     Returns matching sections with their URLs. If nothing matches, suggest order_wiki.
     """

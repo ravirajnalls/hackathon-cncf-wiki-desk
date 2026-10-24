@@ -1,4 +1,6 @@
-# CNCF Wiki Desk
+# Cloud Native Brain
+
+*A cited wiki of CNCF open source projects, built and kept current by an agent.*
 
 **An agent-run research desk.** Pay $3 on Whop, pick a CNCF open source project (Kubernetes,
 Cilium, Argo, OpenTelemetry, Prometheus, Envoy, Istio, Kyverno, kagent, Agent Substrate, or any
@@ -82,7 +84,7 @@ live a minute later.
 (returns the Whop checkout link).
 
 ```bash
-claude mcp add wiki-desk -- uvx --with "mcp>=1.2,<2" --with requests python mcp_server/wiki_desk_mcp.py
+claude mcp add cloud-native-brain -- uvx --with "mcp>=1.2,<2" --with requests python mcp_server/wiki_desk_mcp.py
 ```
 
 ## Architecture

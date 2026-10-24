@@ -1,6 +1,6 @@
-# CNCF Wiki Desk
+# Cloud Native Brain
 
-> Agent-compiled wikis on CNCF open source projects. Every claim cites a KubeCon talk timestamp or official docs.
+> A cited wiki of CNCF open source projects, built and kept current by an agent. Every claim cites a KubeCon talk timestamp or official docs.
 
 The wiki is organized in four parts:
 
@@ -40,6 +40,6 @@ Each order's page is delivered to its buyer and kept as delivered.
 
 ## About
 
-CNCF Wiki Desk is an agent-run research desk. Pay $3, pick a CNCF project, and get a wiki
+Cloud Native Brain is an agent-run research desk. Pay $3, pick a CNCF project, and get a wiki
 compiled from KubeCon talks and CNCF documentation, with every claim linked to a clickable
 video timestamp. Each order makes the next one faster through compounding memory.

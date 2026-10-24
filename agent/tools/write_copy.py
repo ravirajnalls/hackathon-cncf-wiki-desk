@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-LANDING_COPY = """# CNCF Wiki Desk
+LANDING_COPY = """# Cloud Native Brain
 
 **Get cited cloud-native research delivered in minutes.**
 
@@ -25,7 +25,7 @@ video timestamps pulled from KubeCon talks and official docs.
 
 LAUNCH_POST = """🚀 Just launched at the Terac Zero Human Company Hackathon!
 
-CNCF Wiki Desk: pay $3, name any cloud-native topic, get a cited wiki with
+Cloud Native Brain: pay $3, name any cloud-native topic, get a cited wiki with
 clickable video timestamps — delivered by an agent in minutes.
 
 No humans. No waiting. Just sourced knowledge.
@@ -38,7 +38,7 @@ POLICY_PAGE = """# Terms, Refund Policy & Attribution
 
 ## Terms of Service
 
-CNCF Wiki Desk provides AI-compiled wikis on cloud-native topics. Wikis are
+Cloud Native Brain provides AI-compiled wikis on cloud-native topics. Wikis are
 generated from publicly available KubeCon talks and official documentation.
 
 By purchasing, you receive a single-use license to view and share the wiki.

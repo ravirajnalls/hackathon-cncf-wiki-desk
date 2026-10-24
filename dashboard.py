@@ -1,4 +1,4 @@
-"""CNCF Wiki Desk demo dashboard: orders, revenue, Terac clarity, decisions, wiki diff.
+"""Cloud Native Brain demo dashboard: orders, revenue, Terac clarity, decisions, wiki diff.
 
   streamlit run dashboard.py
 """
@@ -17,8 +17,8 @@ DB_PATH = ROOT / "memory.db"
 STUDIES_DIR = ROOT / "studies"
 PRICE_USD = float(os.environ.get("WHOP_PRICE_USD", "3"))
 
-st.set_page_config(page_title="CNCF Wiki Desk", page_icon="📚", layout="wide")
-st.title("CNCF Wiki Desk")
+st.set_page_config(page_title="Cloud Native Brain", page_icon="📚", layout="wide")
+st.title("Cloud Native Brain")
 st.caption("An agent-run research desk. Customers pay, the agent researches, the wiki gets delivered, "
            "and every order makes the next one better.")
 

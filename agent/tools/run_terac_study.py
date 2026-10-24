@@ -151,7 +151,7 @@ def assign_labels(items: list[dict], seed: int):
 
 def variants_prompt(items: list[dict]) -> str:
     payload = [{"i": i, "section": it["section"], "text": it["original"]} for i, it in enumerate(items, 1)]
-    return f"""You are the editor of CNCF Wiki Desk. Rewrite each explanation below in plain language
+    return f"""You are the editor of Cloud Native Brain. Rewrite each explanation below in plain language
 for a general reader with no cloud background: short sentences, define every term the first time,
 use one concrete analogy, keep every fact, keep it no longer than the original. Do not use tools.
 
@@ -161,7 +161,7 @@ Output ONLY a JSON object: {{"variants": [{{"i": 1, "text": "..."}}, ...]}}"""
 
 
 def launch_prompt(task_text: str, count: int, budget: float) -> str:
-    return f"""You are launching a human study on Terac for CNCF Wiki Desk using the Terac MCP tools.
+    return f"""You are launching a human study on Terac for Cloud Native Brain using the Terac MCP tools.
 Check the actual Terac tool list and input schemas first; they are authoritative if names differ.
 
 1. Call terac_request_feasibility with:
@@ -209,7 +209,7 @@ def apply_prompt(r1: dict) -> str:
                  "plain_variant_score": it.get("scores", {}).get("variant"),
                  "plain_variant_win_rate": it.get("variant_win_rate"),
                  "complaints": it.get("complaints", [])[:8]} for it in r1["items"]]
-    return f"""You are the editor of CNCF Wiki Desk. A Terac panel of general readers rated sections of
+    return f"""You are the editor of Cloud Native Brain. A Terac panel of general readers rated sections of
 our wiki. Results (scores are average clarity 1-5):
 
 {json.dumps(feedback, indent=2, ensure_ascii=False)}

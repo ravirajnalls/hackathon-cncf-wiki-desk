@@ -1,7 +1,7 @@
-site_name: CNCF Wiki Desk
+site_name: Cloud Native Brain
 site_url: https://ravirajnalls.github.io/hackathon-cncf-wiki-desk/
 repo_url: https://github.com/ravirajnalls/hackathon-cncf-wiki-desk
-site_description: Agent-compiled, cited wikis on cloud-native topics. Every claim links to a KubeCon talk timestamp.
+site_description: A cited wiki of CNCF open source projects, built by an agent. Every claim links to a KubeCon talk timestamp or official docs.
 docs_dir: wiki
 site_dir: site
 theme:

@@ -79,7 +79,7 @@ def build_fulfillment_prompt(order: dict) -> str:
     source_url = get_order_source_url(whop_id, slug) if topic else ""
 
     if not topic:
-        return f"""You are fulfilling a CNCF Wiki Desk order via MCP tools.
+        return f"""You are fulfilling a Cloud Native Brain order via MCP tools.
 
 Order ID: {whop_id}
 Topic: NOT YET PROVIDED
@@ -91,21 +91,21 @@ Then report back that we're waiting for the topic."""
 
     projects = match_projects(topic)
     if not projects:
-        return f"""You are fulfilling a CNCF Wiki Desk order via MCP tools.
+        return f"""You are fulfilling a Cloud Native Brain order via MCP tools.
 
 Order ID: {whop_id}
 Topic: {topic}
 
-CNCF Wiki Desk only covers CNCF open source projects, and "{topic}" doesn't match one.
+Cloud Native Brain only covers CNCF open source projects, and "{topic}" doesn't match one.
 Use the Whop MCP to send this message to the buyer:
-"Thanks for your order! CNCF Wiki Desk covers CNCF open source projects, and we couldn't match
+"Thanks for your order! Cloud Native Brain covers CNCF open source projects, and we couldn't match
 '{topic}' to one. Reply with a CNCF project (e.g. {', '.join(CHECKOUT_OPTIONS)}) and we'll build
 your wiki, or ask for a refund."
 
 Then output: {{"status": "out_of_scope", "order_id": "{whop_id}", "topic": "{topic}"}}"""
     project_names = ", ".join(p["name"] for p in projects)
 
-    return f"""You are the fulfillment agent for CNCF Wiki Desk — an autonomous, agent-run company.
+    return f"""You are the fulfillment agent for Cloud Native Brain — an autonomous, agent-run company.
 Your job: research a cloud-native topic, compile a cited wiki, and deliver it to the buyer.
 
 === ORDER ===
@@ -255,7 +255,7 @@ def run_loop(poll_interval: int = 30):
         "All paid orders fulfilled autonomously",
     )
 
-    print(f"[{datetime.now(timezone.utc).isoformat()}] CNCF Wiki Desk orchestrator started")
+    print(f"[{datetime.now(timezone.utc).isoformat()}] Cloud Native Brain orchestrator started")
     print(f"  Polling Whop every {poll_interval}s")
     print(f"  Project: {PROJECT_ROOT}")
     print()
