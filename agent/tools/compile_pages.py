@@ -135,7 +135,7 @@ def write_page(slug: str, content: str):
     # Update index
     index_content = INDEX_FILE.read_text(encoding="utf-8")
     summary_line = content.split("summary: ", 1)[1].split("\n")[0] if "summary: " in content else f"Wiki on {slug}"
-    new_entry = f"- [{slug}](wiki/concepts/{slug}.md) — {summary_line}"
+    new_entry = f"- [{slug}](concepts/{slug}.md) — {summary_line}"
 
     # Replace existing entry or append
     if slug in index_content:

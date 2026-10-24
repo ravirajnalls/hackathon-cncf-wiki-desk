@@ -4,7 +4,7 @@
 
 ## Pages
 
-- [Agent Sandbox on CNCF](wiki/concepts/agent-sandbox-on-cncf.md) — How CNCF projects provide secure, isolated runtime environments for AI agents at scale.
+- [Agent Sandbox on CNCF](concepts/agent-sandbox-on-cncf.md) — How CNCF projects provide secure, isolated runtime environments for AI agents at scale.
 
 ## About
 

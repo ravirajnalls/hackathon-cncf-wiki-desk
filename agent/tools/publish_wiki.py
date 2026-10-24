@@ -1,91 +1,53 @@
-"""Build the static wiki site and return the delivery URL."""
+"""Build the static wiki site and return the delivery URL.
 
-import shutil
+mkdocs.yml lives at the project root (docs_dir: wiki, site_dir: site). The
+hosted copy (Netlify, see netlify.toml) rebuilds from GitHub on every push;
+the local build here just checks the new page renders.
+"""
+
+import os
 import subprocess
 from pathlib import Path
 
-WIKI_DIR = Path(__file__).parent.parent.parent / "wiki"
-SITE_DIR = WIKI_DIR / "site"
-DOCS_MKDOCS = WIKI_DIR / "mkdocs.yml"
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+WIKI_DIR = PROJECT_ROOT / "wiki"
+SITE_DIR = PROJECT_ROOT / "site"
 
-
-def _ensure_mkdocs_config():
-    """Create a minimal mkdocs.yml if it doesn't exist."""
-    if DOCS_MKDOCS.exists():
-        return
-    config = f"""site_name: CNCF Wiki Desk
-theme:
-  name: material
-  features:
-    - navigation.instant
-    - search.suggest
-    - search.highlight
-plugins:
-  - search
-docs_dir: {WIKI_DIR.name}
-site_dir: site
-"""
-    DOCS_MKDOCS.write_text(config, encoding="utf-8")
+# Set WIKI_BASE_URL in .env to the deployed site, e.g. https://cncf-wiki-desk.netlify.app
+DEFAULT_BASE_URL = "https://cncf-wiki-desk.netlify.app"
 
 
 def publish_wiki() -> dict:
-    """Build the static MkDocs site.
+    """Build the MkDocs site locally.
 
-    Returns: {url, status, pages_built}
+    Returns: {status, url, pages_built, warning?}
     """
-    _ensure_mkdocs_config()
-
-    # Count pages
-    pages = list((WIKI_DIR / "concepts").glob("*.md"))
-    pages += list((WIKI_DIR / "projects").glob("*.md"))
-    pages += list((WIKI_DIR / "talks").glob("*.md"))
-
+    pages = [p for p in WIKI_DIR.rglob("*.md") if p.name not in ("index.md", "log.md")]
     if not pages:
         return {"status": "no_pages", "url": "", "pages_built": 0}
 
     try:
         result = subprocess.run(
-            ["mkdocs", "build"],
-            cwd=str(WIKI_DIR),
+            ["mkdocs", "build", "--quiet"],
+            cwd=str(PROJECT_ROOT),
             capture_output=True,
             text=True,
-            timeout=60,
+            timeout=120,
         )
-        if result.returncode != 0:
-            # Fallback: just copy markdown files as static HTML
-            SITE_DIR.mkdir(exist_ok=True)
-            for p in pages:
-                shutil.copy2(p, SITE_DIR / p.name)
-            return {
-                "status": "fallback_copied",
-                "url": str(SITE_DIR),
-                "pages_built": len(pages),
-                "warning": result.stderr[:500],
-            }
-
-        return {
-            "status": "built",
-            "url": str(SITE_DIR),
-            "pages_built": len(pages),
-        }
     except FileNotFoundError:
-        # mkdocs not installed — fallback to copying
-        SITE_DIR.mkdir(exist_ok=True)
-        for p in pages:
-            shutil.copy2(p, SITE_DIR / p.name)
-        return {
-            "status": "fallback_copied",
-            "url": str(SITE_DIR),
-            "pages_built": len(pages),
-            "warning": "mkdocs not installed, using file copy fallback",
-        }
+        return {"status": "mkdocs_missing", "url": get_base_url(), "pages_built": len(pages),
+                "warning": "mkdocs not installed: pip install -r .requirements"}
+
+    if result.returncode != 0:
+        return {"status": "build_failed", "url": get_base_url(), "pages_built": 0,
+                "warning": result.stderr[-1000:]}
+    return {"status": "built", "url": get_base_url(), "pages_built": len(pages)}
+
+
+def get_base_url() -> str:
+    return os.environ.get("WIKI_BASE_URL", DEFAULT_BASE_URL).rstrip("/")
 
 
 def get_page_url(slug: str) -> str:
-    """Return the URL path for a specific wiki page.
-
-    In production this would be the deployed URL (Netlify/Vercel/Whop hosting).
-    For hackathon, returns the local path or deployed base URL.
-    """
-    deployed_base = "https://cncf-wiki-desk.netlify.app"  # placeholder — update after deploy
-    return f"{deployed_base}/concepts/{slug}/"
+    """Public URL of a concept page on the deployed site."""
+    return f"{get_base_url()}/concepts/{slug}/"

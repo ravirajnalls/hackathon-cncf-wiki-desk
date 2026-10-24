@@ -1,27 +1,46 @@
 # CNCF Wiki Desk
 
-Agent-run company that sells on-demand, cited wikis on cloud-native topics.
+**An agent-run research desk.** Pay $3 on Whop, name any cloud-native topic, and an
+agent researches KubeCon/CNCF talks and delivers a wiki where every claim links to the
+exact moment in the talk. Every order makes the next one faster and better.
 
-- Buyer pays $3 on Whop, names a topic
-- Agent researches KubeCon/CNCF talks via Exa
-- Agent compiles a wiki with clickable video timestamps
-- Agent delivers the link back through Whop
-- Every order makes the next one faster (compounding memory)
+Built solo for Terac's Zero Human Company Hackathon NYC (Oct 24, 2026).
 
-## Setup
+- **Buy:** https://whop.com/github-9154/cloud-native-wiki-on-demand
+- **Live wiki:** https://cncf-wiki-desk.netlify.app (update after the Netlify deploy)
+- **Terac before/after:** [`output/terac_report.md`](output/terac_report.md)
+- **Agent decision log:** [`wiki/log.md`](wiki/log.md)
 
-```bash
-pip install -r .requirements
-cp .env.example .env   # fill in keys
-python -m agent.orchestrator
-```
+## What the agent does (no humans)
 
-## Terac clarity study (human in the loop)
+| Job | How |
+| --- | --- |
+| Sell | Whop checkout; the orchestrator polls paid orders and asks for a topic if missing |
+| Research | Exa finds 8–10 KubeCon/CNCF talks; captions are pulled with timestamps into SQLite FTS5 |
+| Build | Claude compiles a wiki page: YAML frontmatter, a `[▶ MM:SS]` citation on every claim, a Disagreements section when talks conflict |
+| Publish & deliver | Commits and pushes the wiki (Netlify rebuilds the MkDocs site), then messages the buyer the link on Whop |
+| Improve with humans | Terac general-population panels rate clarity; the agent rewrites the wiki and learns writing rules from their feedback |
+| Marketing & legal | Writes landing copy, the launch post, terms, refund policy and CNCF source attribution (`output/`) |
+| Decide | Every choice is logged with reason, expectation and outcome, mirrored to `wiki/log.md` |
 
-General-population panelists on Terac compare wiki sections in two versions and rate
-clarity 1-5. The agent rewrites the wiki from their feedback, learns writing rules
-(`agent/style_guide.md`, injected into every future compile), and a second round
-measures the result.
+## Memory that compounds
+
+- **Semantic memory = the product:** markdown wiki in git (`wiki/`). `index.md` lists every
+  page; the compiler reads it to update existing pages instead of re-researching. Each
+  compile is a commit, so "the wiki updated itself" is a visible diff.
+- **Episodic memory:** SQLite (`memory.db`) holds orders, ingested talks, transcript chunks,
+  Terac study scores and decisions. Talks are never ingested twice.
+- **Learned style:** `agent/style_guide.md`, written from Terac feedback, is injected into
+  every future compile.
+
+## Human in the loop: Terac clarity study
+
+1. **Round 1:** panelists compare wiki sections in two versions (original vs plain-language),
+   rate each 1–5, pick the easier one and say what confused them. A/B order is randomized.
+2. **Apply:** the agent rewrites those sections in place (keeping every citation) and writes
+   writing rules to `agent/style_guide.md`.
+3. **Round 2:** original vs the agent's rewrite. The headline metric is average clarity
+   before vs after.
 
 ```bash
 claude mcp add --transport http terac https://terac.com/api/mcp   # then /mcp to sign in
@@ -34,24 +53,68 @@ python -m agent.tools.run_terac_study collect --round 2
 python -m agent.tools.run_terac_study report                       # output/terac_report.md
 ```
 
+The agent refuses to launch a round quoted above `TERAC_ROUND_BUDGET_USD` (default $40).
 Round state is saved in `studies/round{N}.json`, scores in the `studies` table.
+
+## Run it
+
+```bash
+pip install -r .requirements
+cp .env.example .env                 # Whop key/IDs, Exa key, WIKI_BASE_URL
+claude mcp list                      # Whop, Terac and Exa MCP servers must be connected
+python -m agent.orchestrator         # polls Whop and fulfills orders
+streamlit run dashboard.py           # orders, revenue, clarity before/after, decisions, wiki diff
+mkdocs serve                         # preview the wiki site locally
+python -m agent.tools.verify_citations   # check every timestamp citation
+```
+
+**Deploy the wiki:** connect this repo to Netlify (settings come from `netlify.toml`), then
+set `WIKI_BASE_URL` in `.env` to the site address. The agent pushes after each order, so
+each new page goes live a minute later.
+
+## Architecture
+
+Python owns the loop, state and resumability; a headless Claude Code subprocess
+(`claude -p`) does the research and writing with MCP tools (Whop, Terac, Exa).
+
+```
+Whop order ──> orchestrator.py (poll, dedupe, state in SQLite)
+                   │
+                   └─> claude -p (claude_runner.py)
+                         ├─ Exa: find talks          ─> find_sources.py
+                         ├─ captions -> SQLite FTS5  ─> get_transcript.py
+                         ├─ compile wiki page        ─> wiki/concepts/*.md (+ style_guide.md)
+                         ├─ mkdocs build, git push   ─> publish_wiki.py ─> Netlify
+                         ├─ log decisions            ─> memory.db + wiki/log.md
+                         └─ Whop: message buyer the link
+Terac panels <── run_terac_study.py (launch / collect / apply / report)
+```
 
 ## Project structure
 
 ```
 agent/
-  orchestrator.py      # main tool-calling loop
+  orchestrator.py        # order loop: poll Whop, dedupe, spawn Claude to fulfill
+  claude_runner.py       # runs `claude -p` with MCP tools, parses its JSON result
+  db.py                  # SQLite schema + decision log export
+  style_guide.md         # writing rules learned from Terac (created by `apply`)
   tools/
-    poll_orders.py     # Whop order intake
-    find_sources.py    # Exa discovery
-    get_transcript.py  # YouTube captions + timestamps
-    compile_pages.py   # wiki ops (create/update/flag_conflict)
-    publish_wiki.py    # build static MkDocs site
-    deliver.py         # send link via Whop
-    run_terac_study.py # Terac clarity A/B studies (launch/collect/apply/report)
-  claude_runner.py     # runs `claude -p` with MCP tools, parses its JSON result
-    write_copy.py      # marketing copy
-    log_decision.py    # decision memory
-wiki/                  # the product + semantic memory (git)
-memory.db              # SQLite episodic + operational memory
+    poll_orders.py       # Whop order intake
+    find_sources.py      # Exa discovery
+    get_transcript.py    # YouTube captions + timestamps
+    compile_pages.py     # wiki ops (create/update/flag_conflict)
+    publish_wiki.py      # MkDocs build + public page URLs
+    deliver.py           # send link via Whop
+    run_terac_study.py   # Terac clarity A/B studies
+    verify_citations.py  # check timestamp citations against transcripts
+    write_copy.py        # marketing + policy copy
+    log_decision.py      # decision memory
+dashboard.py             # Streamlit demo dashboard
+wiki/                    # the product + semantic memory (git)
+studies/                 # Terac round state
+output/                  # landing copy, launch post, policy, Terac report
+memory.db                # SQLite episodic + operational memory (not committed)
 ```
+
+Wiki content is compiled from public KubeCon/CNCF talks, and every claim links to its
+source. CNCF, KubeCon and project names are trademarks of the Linux Foundation.
