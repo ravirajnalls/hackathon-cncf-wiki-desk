@@ -88,3 +88,4 @@ Cloud-native agent harness built as a distributed system. Separates the agent lo
 
 - [Kubernetes Agent Sandbox](kubernetes-agent-sandbox.md) — the SIG Apps Sandbox CRD, templates, claims and warm pools.
 - [gVisor for AI agent isolation](gvisor-for-ai-agent-isolation.md) — the user-space kernel behind Agent Sandbox: how it works and when to choose it.
+- [Kata Containers for AI agents](kata-containers-for-ai-agents.md) — VM-per-sandbox isolation, Kata 4.0 features, and when to choose it over gVisor.
