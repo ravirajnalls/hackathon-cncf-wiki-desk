@@ -25,16 +25,45 @@ from dotenv import load_dotenv
 load_dotenv(PROJECT_ROOT / ".env")
 
 from agent.db import record_order, mark_delivered, log_decision, get_order, set_order_status
-from agent.tools.poll_orders import poll_orders as whop_poll
+from agent.tools.poll_orders import poll_orders as whop_poll, get_checkout_answers
 from agent.claude_runner import run_claude
 from agent.tools.run_terac_study import style_guide_text
 from agent.tools.compile_pages import _slugify
 from agent.tools.publish_wiki import get_page_url
 
 
+_checkout_topics: dict[str, str] = {}
+
+
 def order_topic(order: dict) -> str:
-    """Topic the buyer gave at checkout (Whop payment metadata may be null)."""
-    return ((order.get("metadata") or {}).get("topic") or "").strip()
+    """Topic the buyer gave: payment metadata, else the plan's checkout question."""
+    topic = ((order.get("metadata") or {}).get("topic") or "").strip()
+    if topic:
+        return topic
+    pay_id = order.get("id", "")
+    if pay_id not in _checkout_topics:
+        topic = _topic_from_checkout(order)
+        if topic is None:
+            return ""  # lookup failed; try again next poll
+        _checkout_topics[pay_id] = topic
+    return _checkout_topics[pay_id]
+
+
+def _topic_from_checkout(order: dict) -> str | None:
+    membership_id = (order.get("membership") or {}).get("id")
+    if not membership_id:
+        return ""
+    try:
+        answers = get_checkout_answers(membership_id)
+    except Exception as e:  # don't block the loop on one bad lookup
+        print(f"  WARN: could not read checkout answers for {order.get('id')}: {e}")
+        return None
+    # Prefer the question that mentions "topic"; otherwise the first answer given
+    answers = [a for a in answers if (a.get("answer") or "").strip()]
+    for a in answers:
+        if "topic" in (a.get("question") or "").lower():
+            return a["answer"].strip()
+    return answers[0]["answer"].strip() if answers else ""
 
 
 def build_fulfillment_prompt(order: dict) -> str:

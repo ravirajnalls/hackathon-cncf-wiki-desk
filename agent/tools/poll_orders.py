@@ -49,6 +49,17 @@ def get_order(order_id: str) -> dict:
     return resp.json()
 
 
+def get_checkout_answers(membership_id: str) -> list[dict]:
+    """Buyer's answers to the plan's checkout questions: [{question, answer}].
+
+    Add a required text custom field (e.g. "Which cloud-native topic?") to the
+    $3 plan in the Whop dashboard; answers live on the membership.
+    """
+    resp = requests.get(f"{WHOP_BASE}/memberships/{membership_id}", headers=_headers(), timeout=15)
+    resp.raise_for_status()
+    return resp.json().get("custom_field_responses") or []
+
+
 def send_message(order_id: str, message: str) -> dict:
     """Send a message to the buyer through Whop.
 
