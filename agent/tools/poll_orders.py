@@ -1,6 +1,12 @@
 """Whop order intake — poll for new paid orders."""
 
 import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+# Load .env even when this module is run on its own (python -m agent.tools.…)
+load_dotenv(Path(__file__).parent.parent.parent / ".env")
 import requests
 
 WHOP_API_KEY = os.environ.get("WHOP_API_KEY", "")

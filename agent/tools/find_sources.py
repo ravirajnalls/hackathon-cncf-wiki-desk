@@ -1,6 +1,12 @@
 """Exa discovery — find KubeCon/CNCF talks and docs on a topic."""
 
 import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+# Load .env even when this module is run on its own (python -m agent.tools.…)
+load_dotenv(Path(__file__).parent.parent.parent / ".env")
 
 try:
     from exa_py import Exa
