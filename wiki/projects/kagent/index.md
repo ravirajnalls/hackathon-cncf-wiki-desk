@@ -35,9 +35,10 @@ Eitan Yarmush (Solo.io, kagent maintainer) boils an agent down to three things: 
 
 ## Real-world usage
 
-- Solo.io built it out of its own support experience with Kubernetes, Envoy, Istio, Prometheus and Argo: the idea was to "clone" in-house experts as agents and share a catalog of them [docs](https://www.cncf.io/blog/2025/04/15/kagent-bringing-agentic-ai-to-cloud-native/).
-- Access control: Kakodkar recommends the LLM never talk to the API server directly, only through tools you expose, which limits its access with ordinary RBAC [▶ 18:56](https://www.youtube.com/watch?v=-c1bmSr5328&t=1136s).
-- The GitHub repo lists Apache 2.0 licensing, with Go and Python among its main languages [docs](https://github.com/kagent-dev/kagent/).
+- **DNB (Norway's largest financial services group)**: the platform team running payments built an internal assistant on kagent and agentgateway, starting as a Slack bot, with MCP servers for DB2 inspection (structures, lock reports, performance data), MQ, Jira and Atlassian; agentgateway ties into Microsoft Entra ID with JWT identity propagation. The goal was supporting more users without adding headcount; adoption was faster than expected, and the team has moved to contributing a security-enhancement design proposal. No user counts or time-saved figures are given [docs](https://kagent.dev/blog/dnb-kagent-agentgateway).
+- **Community member Maryam Naveed (Kotaicode publication)**: a self-healing nginx setup where kagent plus the Khook event hook detects pod crashes and config problems, fixes nginx config, SSL and syntax errors, and verifies recovery. The write-up claims remediation now takes about 30 seconds instead of hours of manual SSH, log parsing and ConfigMap editing; cluster size and incident volume are not given, and the employer is not named [docs](https://www.kagent.dev/blog/community-nginx-khook-kagent).
+
+> Only two independently named end-user use cases were found, both from kagent.dev case-study posts; the project keeps no ADOPTERS.md or USERS.md (both 404), and the end-user talks found were demos or did not mention kagent.
 
 ## Disagreements
 
