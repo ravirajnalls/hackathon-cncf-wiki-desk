@@ -43,3 +43,18 @@ Eitan Yarmush (Solo.io, kagent maintainer) boils an agent down to three things: 
 ## Disagreements
 
 > ⚠ Sources differ on kagent's underlying framework. The April 2025 CNCF launch post says kagent is built on Microsoft's AutoGen [docs](https://www.cncf.io/blog/2025/04/15/kagent-bringing-agentic-ai-to-cloud-native/), while the current docs say the framework is built on Google's ADK [docs](https://kagent.dev/docs/kagent/0.x/introduction/what-is-kagent/). Treat the docs as current; the blog reflects the early design.
+
+## References
+
+**Talks**
+
+1. [Eitan Yarmush (Solo.io), 2025](https://www.youtube.com/watch?v=oXBr9UAOG2M), cited at [00:00](https://www.youtube.com/watch?v=oXBr9UAOG2M&t=0s), [00:43](https://www.youtube.com/watch?v=oXBr9UAOG2M&t=43s), [01:27](https://www.youtube.com/watch?v=oXBr9UAOG2M&t=87s), [02:10](https://www.youtube.com/watch?v=oXBr9UAOG2M&t=130s)
+2. [Rajas Kakodkar (Broadcom), 2026](https://www.youtube.com/watch?v=-c1bmSr5328), cited at [06:35](https://www.youtube.com/watch?v=-c1bmSr5328&t=395s), [22:40](https://www.youtube.com/watch?v=-c1bmSr5328&t=1360s), [24:51](https://www.youtube.com/watch?v=-c1bmSr5328&t=1491s)
+
+**Documentation, case studies and articles**
+
+1. [kagent.dev/docs/kagent/0.x/introduction/what-is-kagent](https://kagent.dev/docs/kagent/0.x/introduction/what-is-kagent)
+2. [cncf.io/projects/kagent](https://www.cncf.io/projects/kagent)
+3. [kagent.dev/blog/dnb-kagent-agentgateway](https://kagent.dev/blog/dnb-kagent-agentgateway)
+4. [kagent.dev/blog/community-nginx-khook-kagent](https://www.kagent.dev/blog/community-nginx-khook-kagent)
+5. [cncf.io/blog/2025/04/15/kagent-bringing-agentic-ai-to-cloud-native](https://www.cncf.io/blog/2025/04/15/kagent-bringing-agentic-ai-to-cloud-native)

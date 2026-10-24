@@ -79,6 +79,7 @@ CNCF project(s): {projects}
    bullet per page). Otherwise leave the hub alone.
 
 6. CHECK + PUBLISH:
+     python -m agent.tools.references        # rebuilds the page's "## References" list; don't write it by hand
      python -m agent.tools.verify_citations
      mkdocs build --strict
    Fix anything they report, then:
@@ -107,6 +108,7 @@ missing). Leave every other section unchanged.
    - Add any new talks to the frontmatter sources list.
 {style_guide_text()}
 Then run:
+     python -m agent.tools.references
      python -m agent.tools.verify_citations
      mkdocs build --strict
 Fix anything they report, then:

@@ -55,3 +55,18 @@ Rules of thumb from the sources:
 > ⚠ **What kind of thing is gVisor?** Sghiouar calls it a "micro kernel" [▶ 04:31](https://www.youtube.com/watch?v=c7rsWC8PBHM&t=271s), the docs say it is "not a VM in the everyday sense" and not a syscall filter [docs](https://gvisor.dev/docs/), and the AWS post stresses it is process-level, not hardware, isolation [docs](https://builder.aws.com/content/3ADDWTtyI2gevtzY9d2vzULAxzS/secure-agent-sandboxes-on-eks). Treat "micro kernel" as shorthand: the security boundary is software, so for zero-trust multi-tenancy compare it with Kata, as discussed in [Agent Sandbox on CNCF](../guides/agent-sandbox-on-cncf.md).
 >
 > **Age of evidence.** Lewis's architecture talk is from 2019; check current docs for supported syscalls and platforms.
+
+## References
+
+**Talks**
+
+1. [Abdel Sghiouar (Google), 2026](https://www.youtube.com/watch?v=c7rsWC8PBHM), cited at [03:47](https://www.youtube.com/watch?v=c7rsWC8PBHM&t=227s), [04:31](https://www.youtube.com/watch?v=c7rsWC8PBHM&t=271s), [05:15](https://www.youtube.com/watch?v=c7rsWC8PBHM&t=315s)
+2. [Ian Lewis (Google), 2019](https://www.youtube.com/watch?v=1Ib-rfSzDuM), cited at [08:35](https://www.youtube.com/watch?v=1Ib-rfSzDuM&t=515s), [18:03](https://www.youtube.com/watch?v=1Ib-rfSzDuM&t=1083s), [19:28](https://www.youtube.com/watch?v=1Ib-rfSzDuM&t=1168s), [23:07](https://www.youtube.com/watch?v=1Ib-rfSzDuM&t=1387s), [24:34](https://www.youtube.com/watch?v=1Ib-rfSzDuM&t=1474s)
+3. [Abdel Sghiouar (Google), 2026](https://www.youtube.com/watch?v=ZJH1kYFKjK8), cited at [05:14](https://www.youtube.com/watch?v=ZJH1kYFKjK8&t=314s)
+
+**Documentation, case studies and articles**
+
+1. [gvisor.dev/docs](https://gvisor.dev/docs)
+2. [builder.aws.com/content/3ADDWTtyI2gevtzY9d2vzULAxzS/secure-agent-sandboxes-on-eks](https://builder.aws.com/content/3ADDWTtyI2gevtzY9d2vzULAxzS/secure-agent-sandboxes-on-eks)
+3. [cloud.google.com/blog/products/containers-kubernetes/agentic-ai-on-kubernetes-and-gke](https://cloud.google.com/blog/products/containers-kubernetes/agentic-ai-on-kubernetes-and-gke)
+4. [gvisor.dev/blog](https://gvisor.dev/blog)

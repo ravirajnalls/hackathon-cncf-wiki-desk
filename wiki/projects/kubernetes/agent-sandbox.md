@@ -64,6 +64,19 @@ Only two sourced use cases were found, both from talks. The project keeps no ADO
 
 > ⚠ The Kubernetes blog describes the project as "currently in development under SIG Apps" [docs](https://kubernetes.io/blog/2026/03/20/running-agents-on-kubernetes-with-agent-sandbox/), while the talks present it as production-used by Lovable [▶ 11:06](https://www.youtube.com/watch?v=ZJH1kYFKjK8&t=666s). Treat APIs as fast-moving. Also, the default gVisor (user-space kernel) differs from the VM-per-sandbox view in the hub page; the project is runtime-agnostic, so the choice is yours.
 
-## Sources
+## References
 
-Talks: Sghiouar at PlatformCon 2026 (`c7rsWC8PBHM`) and Jfokus 2026 (`ZJH1kYFKjK8`); Xu Wang & Yu Hu at KubeCon Japan 2026 (`aFX_6HL_i80`). Docs: project README, Kubernetes blog (Mar 2026), Google Open Source blog (Nov 2025), CNCF blog (Jul 2026), GKE docs.
+**Talks**
+
+1. [Abdel Sghiouar (Google), 2026](https://www.youtube.com/watch?v=ZJH1kYFKjK8), cited at [03:47](https://www.youtube.com/watch?v=ZJH1kYFKjK8&t=227s), [05:14](https://www.youtube.com/watch?v=ZJH1kYFKjK8&t=314s), [08:55](https://www.youtube.com/watch?v=ZJH1kYFKjK8&t=535s), [11:06](https://www.youtube.com/watch?v=ZJH1kYFKjK8&t=666s), [12:35](https://www.youtube.com/watch?v=ZJH1kYFKjK8&t=755s)
+2. [Abdel Sghiouar (Google), 2026](https://www.youtube.com/watch?v=c7rsWC8PBHM), cited at [03:47](https://www.youtube.com/watch?v=c7rsWC8PBHM&t=227s), [10:23](https://www.youtube.com/watch?v=c7rsWC8PBHM&t=623s), [11:06](https://www.youtube.com/watch?v=c7rsWC8PBHM&t=666s), [12:35](https://www.youtube.com/watch?v=c7rsWC8PBHM&t=755s)
+3. [Xu Wang & Yu Hu, 2026](https://www.youtube.com/watch?v=aFX_6HL_i80), cited at [26:58](https://www.youtube.com/watch?v=aFX_6HL_i80&t=1618s)
+
+**Documentation, case studies and articles**
+
+1. [github.com/kubernetes-sigs/agent-sandbox](https://github.com/kubernetes-sigs/agent-sandbox)
+2. [kubernetes.io/blog/2026/03/20/running-agents-on-kubernetes-with-agent-sandbox](https://kubernetes.io/blog/2026/03/20/running-agents-on-kubernetes-with-agent-sandbox)
+3. [opensource.googleblog.com/2025/11/unleashing-autonomous-ai-agents-why-kubernetes-needs-a-new-standard-for-agent-execution.html](https://opensource.googleblog.com/2025/11/unleashing-autonomous-ai-agents-why-kubernetes-needs-a-new-standard-for-agent-execution.html)
+4. [agent-sandbox.sigs.k8s.io/docs/use-cases/examples/warmpool-quickstart](https://agent-sandbox.sigs.k8s.io/docs/use-cases/examples/warmpool-quickstart)
+5. [cncf.io/blog/2026/07/07/why-sandboxing-your-agent-is-not-enough](https://www.cncf.io/blog/2026/07/07/why-sandboxing-your-agent-is-not-enough)
+6. [docs.cloud.google.com/kubernetes-engine/docs/concepts/machine-learning/agent-sandbox](https://docs.cloud.google.com/kubernetes-engine/docs/concepts/machine-learning/agent-sandbox)

@@ -72,3 +72,19 @@ Pai's practical advice: assume exfiltration is always possible from the sandbox,
 - [Kubernetes Agent Sandbox](../projects/kubernetes/agent-sandbox.md)
 - [Kata Containers for AI agents](kata-containers-for-ai-agents.md)
 - [gVisor for AI agent isolation](gvisor-for-ai-agent-isolation.md)
+
+## References
+
+**Talks**
+
+1. [Lens, 2026](https://www.youtube.com/watch?v=bfmBJ-th2-4), cited at [02:11](https://www.youtube.com/watch?v=bfmBJ-th2-4&t=131s)
+2. [Prashanth Pai (CodeRabbit), 2026](https://www.youtube.com/watch?v=y_vC8oxtbjY), cited at [16:11](https://www.youtube.com/watch?v=y_vC8oxtbjY&t=971s), [21:19](https://www.youtube.com/watch?v=y_vC8oxtbjY&t=1279s), [24:12](https://www.youtube.com/watch?v=y_vC8oxtbjY&t=1452s), [30:47](https://www.youtube.com/watch?v=y_vC8oxtbjY&t=1847s)
+3. [Phil Estes (IBM), 2019](https://www.youtube.com/watch?v=92MQcV0GSyk), cited at [22:28](https://www.youtube.com/watch?v=92MQcV0GSyk&t=1348s), [23:57](https://www.youtube.com/watch?v=92MQcV0GSyk&t=1437s), [26:50](https://www.youtube.com/watch?v=92MQcV0GSyk&t=1610s), [27:33](https://www.youtube.com/watch?v=92MQcV0GSyk&t=1653s), [33:22](https://www.youtube.com/watch?v=92MQcV0GSyk&t=2002s)
+4. [Fupan Li & X. Niu (Ant Group), 2026](https://www.youtube.com/watch?v=lruh-JgbTKM), cited at [07:12](https://www.youtube.com/watch?v=lruh-JgbTKM&t=432s)
+5. [Abdel Sghiouar (Google), 2026](https://www.youtube.com/watch?v=ZJH1kYFKjK8), cited at [03:47](https://www.youtube.com/watch?v=ZJH1kYFKjK8&t=227s)
+6. [YouTube video Qcuzt2YkdMs](https://www.youtube.com/watch?v=Qcuzt2YkdMs), cited at [03:34](https://www.youtube.com/watch?v=Qcuzt2YkdMs&t=214s)
+
+**Documentation, case studies and articles**
+
+1. [aws.amazon.com/blogs/compute/running-self-hosted-ai-agent-sandboxes-with-aws-lambda-microvms](https://aws.amazon.com/blogs/compute/running-self-hosted-ai-agent-sandboxes-with-aws-lambda-microvms)
+2. [agent-sandbox.sigs.k8s.io/docs/use-cases/examples/firecracker-sandbox](https://agent-sandbox.sigs.k8s.io/docs/use-cases/examples/firecracker-sandbox)

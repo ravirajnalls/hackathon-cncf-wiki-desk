@@ -93,3 +93,9 @@ Cloud-native agent harness built as a distributed system. Separates the agent lo
 - [kagent: AI agents on Kubernetes](../projects/kagent/index.md) — declarative agents, MCP tools and GitOps operation, and how it pairs with sandbox runtimes.
 - [Securing MCP tool calls in agent sandboxes](securing-mcp-tool-calls-in-agent-sandboxes.md) — gateway auth, default-deny tool allow lists, policy engines and sandboxed MCP servers.
 - [Cilium](../projects/cilium/index.md) — eBPF networking, identity-based network policy and egress control for the pods that host agent sandboxes.
+
+## References
+
+**Talks**
+
+1. [Xu Wang (Ant Group) & Yu Hu (JAPAN AI), 2026](https://www.youtube.com/watch?v=aFX_6HL_i80), cited at [3:37](https://www.youtube.com/watch?v=aFX_6HL_i80&t=217s), [5:05](https://www.youtube.com/watch?v=aFX_6HL_i80&t=305s), [05:50](https://www.youtube.com/watch?v=aFX_6HL_i80&t=350s), [07:18](https://www.youtube.com/watch?v=aFX_6HL_i80&t=438s), [7:57](https://www.youtube.com/watch?v=aFX_6HL_i80&t=477s), [8:51](https://www.youtube.com/watch?v=aFX_6HL_i80&t=531s), [11:45](https://www.youtube.com/watch?v=aFX_6HL_i80&t=705s), [12:28](https://www.youtube.com/watch?v=aFX_6HL_i80&t=748s), [13:13](https://www.youtube.com/watch?v=aFX_6HL_i80&t=793s), [15:22](https://www.youtube.com/watch?v=aFX_6HL_i80&t=922s), [21:30](https://www.youtube.com/watch?v=aFX_6HL_i80&t=1290s)

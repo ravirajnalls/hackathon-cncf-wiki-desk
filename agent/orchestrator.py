@@ -151,6 +151,7 @@ The page MUST have:
 - YAML frontmatter: title, summary, sources, updated, clarity_score
 - Every claim ends with a clickable timestamp link: [▶ MM:SS](https://youtube.com/watch?v=VID&t=SECONDSs)
 - Disagreements section if multiple speakers conflict
+- No hand-written sources list: STEP 4 adds a "## References" section listing every cited source
 {usage_instructions(topic)}{style_guide_text()}
 
 STEP 4 — PUBLISH (commit + push; the hosted site rebuilds from GitHub)

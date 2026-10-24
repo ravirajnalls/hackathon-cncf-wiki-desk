@@ -63,3 +63,18 @@ Guidance from the sources:
 > **Is the VM cost acceptable?** Bao calls the per-sandbox VM cost small enough for ephemeral sandboxes [▶ 09:24](https://www.youtube.com/watch?v=Qcuzt2YkdMs&t=564s), while the earlier Japan AI talk concedes VMs cost more start-up time and memory that "should be solved by the technology" (see [Agent Sandbox on CNCF](../guides/agent-sandbox-on-cncf.md)).
 >
 > **Maturity caveats.** Kata 4.0 had been out only weeks at the time of the talks [▶ 13:13](https://www.youtube.com/watch?v=aFX_6HL_i80&t=793s), and Kubernetes checkpoint/restore for Kata was still under review [▶ 08:39](https://www.youtube.com/watch?v=lruh-JgbTKM&t=519s).
+
+## References
+
+**Talks**
+
+1. [Fupan Li & X. Niu (Ant Group), 2026](https://www.youtube.com/watch?v=lruh-JgbTKM), cited at [02:55](https://www.youtube.com/watch?v=lruh-JgbTKM&t=175s), [04:24](https://www.youtube.com/watch?v=lruh-JgbTKM&t=264s), [05:06](https://www.youtube.com/watch?v=lruh-JgbTKM&t=306s), [06:30](https://www.youtube.com/watch?v=lruh-JgbTKM&t=390s), [07:56](https://www.youtube.com/watch?v=lruh-JgbTKM&t=476s), [08:39](https://www.youtube.com/watch?v=lruh-JgbTKM&t=519s), [15:59](https://www.youtube.com/watch?v=lruh-JgbTKM&t=959s), [16:42](https://www.youtube.com/watch?v=lruh-JgbTKM&t=1002s)
+2. [Wenjie Bao, 2026](https://www.youtube.com/watch?v=Qcuzt2YkdMs), cited at [06:29](https://www.youtube.com/watch?v=Qcuzt2YkdMs&t=389s), [08:40](https://www.youtube.com/watch?v=Qcuzt2YkdMs&t=520s), [09:24](https://www.youtube.com/watch?v=Qcuzt2YkdMs&t=564s), [10:09](https://www.youtube.com/watch?v=Qcuzt2YkdMs&t=609s), [23:57](https://www.youtube.com/watch?v=Qcuzt2YkdMs&t=1437s), [24:40](https://www.youtube.com/watch?v=Qcuzt2YkdMs&t=1480s), [26:07](https://www.youtube.com/watch?v=Qcuzt2YkdMs&t=1567s)
+3. [Xu Wang (Ant Group) & Yu Hu (JAPAN AI), 2026](https://www.youtube.com/watch?v=aFX_6HL_i80), cited at [08:07](https://www.youtube.com/watch?v=aFX_6HL_i80&t=487s), [13:13](https://www.youtube.com/watch?v=aFX_6HL_i80&t=793s), [14:41](https://www.youtube.com/watch?v=aFX_6HL_i80&t=881s), [26:58](https://www.youtube.com/watch?v=aFX_6HL_i80&t=1618s)
+4. [OpenInfra Foundation (Kata community), 2025](https://www.youtube.com/watch?v=bdoF5hQojaA), cited at [02:10](https://www.youtube.com/watch?v=bdoF5hQojaA&t=130s), [02:54](https://www.youtube.com/watch?v=bdoF5hQojaA&t=174s), [03:43](https://www.youtube.com/watch?v=bdoF5hQojaA&t=223s)
+
+**Documentation, case studies and articles**
+
+1. [katacontainers.io](https://katacontainers.io)
+2. [confpad.io/conferences/kubecon-cloudnativecon-openinfra-summit-pytorch-conference-china-2026/what-we-learned-securing-ai-agents-at-scale-on-multi-tenant-kubernetes-clusters](https://confpad.io/conferences/kubecon-cloudnativecon-openinfra-summit-pytorch-conference-china-2026/what-we-learned-securing-ai-agents-at-scale-on-multi-tenant-kubernetes-clusters)
+3. [cloud.google.com/blog/products/containers-kubernetes/agentic-ai-on-kubernetes-and-gke](https://cloud.google.com/blog/products/containers-kubernetes/agentic-ai-on-kubernetes-and-gke)

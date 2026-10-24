@@ -56,3 +56,23 @@ De Jong recommends starting with default per-namespace policies while using Hubb
 ## Disagreements
 
 None found among the sources. Note the talks span 2019 to 2025, so performance figures from the older talks are dated.
+
+## References
+
+**Talks**
+
+1. [Martynas Pumputis (Cilium), 2019](https://www.youtube.com/watch?v=bIRwSIwNHC0), cited at [00:00](https://www.youtube.com/watch?v=bIRwSIwNHC0&t=0s), [04:19](https://www.youtube.com/watch?v=bIRwSIwNHC0&t=259s)
+2. [Liz Rice (Isovalent), 2025](https://www.youtube.com/watch?v=T_EDE6DDqYc), cited at [00:00](https://www.youtube.com/watch?v=T_EDE6DDqYc&t=0s)
+3. [Daniel Borkmann (Cilium), 2020](https://www.youtube.com/watch?v=99jUcLt3rSk), cited at [08:01](https://www.youtube.com/watch?v=99jUcLt3rSk&t=481s), [32:04](https://www.youtube.com/watch?v=99jUcLt3rSk&t=1924s), [35:41](https://www.youtube.com/watch?v=99jUcLt3rSk&t=2141s)
+4. [Raymond de Jong (Isovalent), 2023](https://www.youtube.com/watch?v=yikVhGM2ye8), cited at [08:00](https://www.youtube.com/watch?v=yikVhGM2ye8&t=480s), [16:48](https://www.youtube.com/watch?v=yikVhGM2ye8&t=1008s)
+5. [Liz Rice (Isovalent), 2023](https://www.youtube.com/watch?v=fJiuqRY5Oi4), cited at [00:49](https://www.youtube.com/watch?v=fJiuqRY5Oi4&t=49s), [22:40](https://www.youtube.com/watch?v=fJiuqRY5Oi4&t=1360s)
+6. [Ahmed (New York Times), Joe (Ascend), 2024](https://www.youtube.com/watch?v=xJ_Jiv7y6N0), cited at [07:19](https://www.youtube.com/watch?v=xJ_Jiv7y6N0&t=439s), [08:47](https://www.youtube.com/watch?v=xJ_Jiv7y6N0&t=527s), [10:16](https://www.youtube.com/watch?v=xJ_Jiv7y6N0&t=616s)
+7. [Moh Ahmed & Raymond Maika (Samsung Ads), 2024](https://www.youtube.com/watch?v=2KlVTx611bk), cited at [00:44](https://www.youtube.com/watch?v=2KlVTx611bk&t=44s), [07:13](https://www.youtube.com/watch?v=2KlVTx611bk&t=433s)
+
+**Documentation, case studies and articles**
+
+1. [docs.cilium.io/en/latest/overview/intro](https://docs.cilium.io/en/latest/overview/intro)
+2. [cilium.io/blog](https://cilium.io/blog)
+3. [cncf.io/case-studies/seznam](https://www.cncf.io/case-studies/seznam)
+4. [cncf.io/case-studies/postfinance](https://www.cncf.io/case-studies/postfinance)
+5. [github.com/cilium/cilium/blob/main/USERS.md](https://github.com/cilium/cilium/blob/main/USERS.md)

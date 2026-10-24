@@ -26,6 +26,9 @@ def publish_wiki() -> dict:
     if not pages:
         return {"status": "no_pages", "url": "", "pages_built": 0}
 
+    from agent.tools.references import update_all
+    update_all()  # every page ends with a References list of all its sources
+
     try:
         result = subprocess.run(
             ["mkdocs", "build", "--quiet"],
