@@ -55,7 +55,10 @@ Sghiouar prompts an agent to print its environment variables. With the sandbox, 
 
 ## Real-world usage
 
-Sghiouar says Lovable, a Swedish vibe-coding platform, uses it in production: each user writing an application gets a pod from a warm pool [▶ 11:06](https://www.youtube.com/watch?v=ZJH1kYFKjK8&t=666s), protecting Lovable's cluster from the customers' agents [▶ 12:35](https://www.youtube.com/watch?v=c7rsWC8PBHM&t=755s). GKE offers a managed add-on based on the open-source controller [docs](https://docs.cloud.google.com/kubernetes-engine/docs/concepts/machine-learning/agent-sandbox).
+- **Lovable**: a Swedish vibe-coding platform that, per Google's Abdel Sghiouar, runs Agent Sandbox in production, giving each user writing an application a pod from a warm pool [▶ 11:06](https://www.youtube.com/watch?v=ZJH1kYFKjK8&t=666s). It protects Lovable's cluster from what the customers' agents do [▶ 12:35](https://www.youtube.com/watch?v=c7rsWC8PBHM&t=755s). No scale figures are given.
+- **Japan AI / Ant Group**: combined the agent-sandbox CRD (v0.5.3), Kata on EKS and an image service, and measured about 1.4 seconds for a warm start [▶ 26:58](https://www.youtube.com/watch?v=aFX_6HL_i80&t=1618s).
+
+Only two sourced use cases were found, both from talks. The project keeps no ADOPTERS.md or USERS.md, and its README "Used by" section is empty [docs](https://github.com/kubernetes-sigs/agent-sandbox). GKE offers a managed add-on based on the open-source controller [docs](https://docs.cloud.google.com/kubernetes-engine/docs/concepts/machine-learning/agent-sandbox), but it names no customers.
 
 ## Disagreements
 
