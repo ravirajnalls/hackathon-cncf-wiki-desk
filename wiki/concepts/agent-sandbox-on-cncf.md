@@ -90,3 +90,4 @@ Cloud-native agent harness built as a distributed system. Separates the agent lo
 - [gVisor for AI agent isolation](gvisor-for-ai-agent-isolation.md) — the user-space kernel behind Agent Sandbox: how it works and when to choose it.
 - [Kata Containers for AI agents](kata-containers-for-ai-agents.md) — VM-per-sandbox isolation, Kata 4.0 features, and when to choose it over gVisor.
 - [Firecracker microVMs for agent sandboxes](firecracker-microvms-for-agent-sandboxes.md) — Firecracker's minimal VMM for per-sandbox kernels, via Kata or Agent Sandbox, and when to choose it.
+- [kagent: AI agents on Kubernetes](kagent-ai-agents-on-kubernetes.md) — declarative agents, MCP tools and GitOps operation, and how it pairs with sandbox runtimes.
