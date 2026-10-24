@@ -2,8 +2,10 @@
 title: Agent Sandbox on CNCF
 summary: How CNCF projects provide secure, isolated runtime environments for AI agents at scale.
 sources:
-  - {video: "", t: 0, speaker: "Craig McLuckie (Stacklok)", year: "2026"}
   - {video: "aFX_6HL_i80", t: 0, speaker: "Xu Wang (Ant Group) & Yu Hu (JAPAN AI)", year: "2026"}
+  - {video: "SomP92JWPmE", t: 0, speaker: "Christian Posta", year: "2026"}
+  - {video: "", t: 0, speaker: "Rahul Jadhav (Accuknox)", year: "2025"}
+  - {video: "", t: 0, speaker: "Craig McLuckie (Stacklok)", year: "2026"}
 links: [agent-substrate, mecatl, kagent, cloud-native-agentic-standards]
 updated: 2026-10-24
 clarity_score: 0.0
@@ -55,6 +57,10 @@ Resource: [CNCF blog](https://www.cncf.io/blog/2026/03/23/cloud-native-agentic-s
 ### Sandbox for Agentic Application (KubeCon talk)
 
 **"Sandbox for Agentic Application With Cloud Native Stack"** — Xu Wang (Ant Group) & Yu Hu (JAPAN AI). Live demo of running agent sandboxes on a cloud-native stack at KubeCon. [▶](https://www.youtube.com/watch?v=aFX_6HL_i80)
+
+### Sandboxing Agentic AI with LSM-BPF (KubeCon India 2025)
+
+Rahul Jadhav (Accuknox) presented using Linux Security Modules and BPF to sandbox agentic AI workloads — kernel-level isolation for agents. [▶](https://confpad.io/conferences/kubecon-cloudnativecon-india-2025/sandboxing-agentic-ai-with-lsm-bpf)
 
 ## Key patterns
 
