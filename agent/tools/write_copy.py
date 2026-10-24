@@ -1,6 +1,7 @@
 """Write marketing copy — landing page, launch post, policy page."""
 
 import json
+from pathlib import Path
 
 LANDING_COPY = """# CNCF Wiki Desk
 

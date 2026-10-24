@@ -1,240 +1,208 @@
-"""Main orchestrator — runs the 7-step fulfillment loop for each order.
+"""Python orchestrator — polls Whop, spawns Claude Code subprocess to fulfill.
 
-Steps:
-  1. poll_orders    — find paid orders
-  2. find_sources   — discover KubeCon/CNCF talks via Exa
-  3. get_transcript — pull captions with timestamps
-  4. compile_pages  — decide create/update/conflict, write wiki
-  5. publish_wiki   — build static site, get delivery URL
-  6. deliver        — send link to buyer via Whop
-  7. log_decision   — record outcome for compounding memory
-
-On any step failure, the loop can be resumed from where it left off.
+Architecture:
+  Python: polling loop, state machine, SQLite, resumability
+  Claude subprocess (via `claude -p`): fulfillment using native MCP tools
+    - Whop MCP: poll orders, send messages to buyers
+    - Terac MCP: launch clarity A/B studies
+    - Exa: discover KubeCon/CNCF talks
+    - File tools: write/update wiki pages
+    - Shell: fetch transcripts, publish site, git commit
 """
 
 import json
 import os
+import subprocess
 import sys
 import time
 from datetime import datetime
+from pathlib import Path
 
-from anthropic import Anthropic
+PROJECT_ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
 
-# Ensure project root is on path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from agent.db import pending_orders, record_order, mark_delivered, log_decision
+from agent.db import record_order, mark_delivered, log_decision, pending_orders
 from agent.tools.poll_orders import poll_orders as whop_poll
-from agent.tools.find_sources import find_sources
-from agent.tools.get_transcript import get_transcript
-from agent.tools.compile_pages import compile_pages, write_page
-from agent.tools.publish_wiki import publish_wiki, get_page_url
-from agent.tools.deliver import deliver
-from agent.tools.write_copy import write_copy
-
-client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY", ""))
-
-SYSTEM_PROMPT = """You are the orchestrator for CNCF Wiki Desk — an agent-run company.
-You fulfill orders autonomously. For each order, you:
-  1. Discover sources (KubeCon talks, CNCF docs) via Exa
-  2. Ingest transcripts with timestamps
-  3. Compile a wiki page (create, update, or flag conflicts)
-  4. Publish and deliver the wiki
-  5. Log your decisions
-
-You have access to tools. Use them. Be efficient — the buyer is waiting.
-When you log a decision, include: what you decided, why, and what you expected."""
 
 
-def _tool_specs():
-    """Return Anthropic tool definitions."""
-    return [
-        {
-            "name": "find_sources",
-            "description": "Search for KubeCon/CNCF talks and docs on a topic via Exa. Returns 8-10 sources sorted by relevance.",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "topic": {"type": "string", "description": "Cloud-native topic to research"},
-                    "max_results": {"type": "integer", "description": "Max sources to return (default 8)"},
-                },
-                "required": ["topic"],
-            },
-        },
-        {
-            "name": "get_transcript",
-            "description": "Fetch YouTube captions with timestamps for a video. Stores chunks in SQLite. Idempotent — skips already-ingested videos.",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "video_url": {"type": "string", "description": "YouTube URL"},
-                    "metadata": {"type": "object", "description": "Optional {title, author, year}"},
-                },
-                "required": ["video_url"],
-            },
-        },
-        {
-            "name": "compile_pages",
-            "description": "Decide wiki page operations (create/update/flag_conflict) and generate markdown content. Checks existing wiki index for duplicates.",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "topic": {"type": "string"},
-                    "sources": {"type": "array", "items": {"type": "object"}},
-                    "transcript_results": {"type": "array", "items": {"type": "object"}},
-                },
-                "required": ["topic", "sources", "transcript_results"],
-            },
-        },
-        {
-            "name": "publish_wiki",
-            "description": "Build the static MkDocs site. Returns delivery URL and status.",
-            "input_schema": {"type": "object", "properties": {}},
-        },
-        {
-            "name": "deliver",
-            "description": "Send the wiki link to the buyer via Whop message.",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "order_id": {"type": "string"},
-                    "slug": {"type": "string"},
-                    "page_url": {"type": "string"},
-                },
-                "required": ["order_id", "slug", "page_url"],
-            },
-        },
-        {
-            "name": "log_decision",
-            "description": "Log a decision with reason, expected outcome, and actual outcome.",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "decision": {"type": "string"},
-                    "reason": {"type": "string"},
-                    "expected": {"type": "string"},
-                    "outcome": {"type": "string"},
-                },
-                "required": ["decision", "reason", "expected"],
-            },
-        },
-    ]
+def build_fulfillment_prompt(order: dict) -> str:
+    """Build the prompt for the Claude fulfillment subprocess."""
+    whop_id = order.get("id", "unknown")
+    topic = order.get("metadata", {}).get("topic", "")
+    created_at = order.get("created_at", "")
+    product_id = os.environ.get("WHOP_PRODUCT_ID", "prod_65oqcxlhZM93U")
+
+    if not topic:
+        return f"""You are fulfilling a CNCF Wiki Desk order via MCP tools.
+
+Order ID: {whop_id}
+Topic: NOT YET PROVIDED
+
+Use the Whop MCP to send this message to the buyer:
+"What cloud-native topic would you like the wiki on? (e.g. Cilium, Gateway API, Argo CD)"
+
+Then report back that we're waiting for the topic."""
+
+    return f"""You are the fulfillment agent for CNCF Wiki Desk — an autonomous, agent-run company.
+Your job: research a cloud-native topic, compile a cited wiki, and deliver it to the buyer.
+
+=== ORDER ===
+Order ID: {whop_id}
+Topic: {topic}
+Product ID: {product_id}
+Working directory: {PROJECT_ROOT}
+
+=== YOUR TOOLS ===
+You have access to:
+- Whop MCP: whop_get_orders, whop_send_message, whop_update_product, etc.
+- Terac MCP: terac.create_study, terac.list_responses, terac.get_results (if available)
+- Exa: search for KubeCon/CNCF talks (via exa_py or Exa MCP)
+- File tools: read, write, edit files in {PROJECT_ROOT}
+- Shell: run commands (python, git, pip)
+
+=== 7 STEPS — DO ALL OF THEM ===
+
+STEP 1 — DISCOVER SOURCES
+Find 8-10 KubeCon/CNCF talks and official docs on "{topic}".
+Use Exa search: query = "CNCF {topic} KubeCon talk OR keynote OR official documentation"
+Prefer YouTube talks and CNCF blog/docs.
+
+STEP 2 — INGEST TRANSCRIPTS
+For each YouTube URL found, run this shell command:
+  python -c "from agent.tools.get_transcript import get_transcript; print(get_transcript('URL'))"
+This stores timestamped chunks in memory.db automatically. Skip videos that fail.
+
+STEP 3 — COMPILE WIKI PAGE
+Run this shell command to generate the wiki page:
+  python -c "from agent.tools.compile_pages import compile_pages, write_page; import json; ..."
+Or write the page directly to wiki/concepts/{topic.lower().replace(' ','-')}.md using the file tools.
+
+The page MUST have:
+- YAML frontmatter: title, summary, sources, updated, clarity_score
+- Every claim ends with a clickable timestamp link: [▶ MM:SS](https://youtube.com/watch?v=VID&t=SECONDSs)
+- Disagreements section if multiple speakers conflict
+
+STEP 4 — PUBLISH
+Run: python -c "from agent.tools.publish_wiki import publish_wiki; print(publish_wiki())"
+Or simply confirm the markdown file is written — the page is the deliverable.
+
+STEP 5 — DELIVER TO BUYER
+Use Whop MCP to send the buyer a message with the wiki link.
+Message format:
+  "✅ Your CNCF Wiki on '{topic}' is ready!
+
+   📖 View it: [URL or file path]
+
+   Every claim is cited with a clickable video timestamp."
+
+STEP 6 — LOG DECISION
+Log your key decisions:
+  python -c "from agent.db import log_decision; log_decision('...', '...', '...', '...')"
+
+STEP 7 — GIT COMMIT
+Run:
+  cd {PROJECT_ROOT}
+  git add .
+  git commit -m "wiki: {topic} (order {whop_id[:8]})"
+
+=== REPORT BACK ===
+When done, output a JSON summary:
+{{"status": "fulfilled", "order_id": "{whop_id}", "topic": "{topic}", "pages_created": N, "sources_used": N}}
+If you cannot complete, output: {{"status": "failed", "reason": "..."}}
+"""
 
 
-def _handle_tool(name: str, inputs: dict) -> str:
-    """Execute a tool call and return the result as a string."""
-    if name == "find_sources":
-        results = find_sources(inputs["topic"], inputs.get("max_results", 8))
-        return json.dumps(results, ensure_ascii=False)
+def spawn_claude_fulfillment(order: dict) -> dict:
+    """Spawn a Claude Code subprocess to fulfill an order."""
+    prompt = build_fulfillment_prompt(order)
 
-    elif name == "get_transcript":
-        results = get_transcript(inputs["video_url"], inputs.get("metadata"))
-        return json.dumps(results, ensure_ascii=False)
+    # Write prompt to a temp file to avoid shell escaping issues
+    prompt_file = PROJECT_ROOT / ".fulfillment_prompt.txt"
+    prompt_file.write_text(prompt, encoding="utf-8")
 
-    elif name == "compile_pages":
-        results = compile_pages(inputs["topic"], inputs["sources"], inputs["transcript_results"])
-        # Write the page to disk
-        if results.get("content"):
-            write_page(results["slug"], results["content"])
-        return json.dumps(results, ensure_ascii=False)
+    try:
+        result = subprocess.run(
+            ["claude", "-p", prompt, "--print"],
+            cwd=str(PROJECT_ROOT),
+            capture_output=True,
+            text=True,
+            timeout=600,  # 10 min max per order
+            env={**os.environ, "CLAUDE_PROJECT_DIR": str(PROJECT_ROOT)},
+        )
 
-    elif name == "publish_wiki":
-        results = publish_wiki()
-        return json.dumps(results, ensure_ascii=False)
+        output = result.stdout.strip()
+        # Try to parse JSON result from the end of output
+        for line in reversed(output.split("\n")):
+            line = line.strip()
+            if line.startswith("{") and line.endswith("}"):
+                try:
+                    return json.loads(line)
+                except json.JSONDecodeError:
+                    continue
 
-    elif name == "deliver":
-        results = deliver(inputs["order_id"], inputs["slug"], inputs["page_url"])
-        # Mark as delivered in DB
-        mark_delivered(inputs["order_id"], inputs["page_url"], cost_usd=3.0)
-        return json.dumps(results, ensure_ascii=False)
+        return {
+            "status": "unknown",
+            "stdout": output[-2000:],
+            "stderr": result.stderr[-1000:] if result.stderr else "",
+            "returncode": result.returncode,
+        }
 
-    elif name == "log_decision":
-        log_decision(inputs["decision"], inputs["reason"], inputs.get("expected", ""), inputs.get("outcome", ""))
-        return json.dumps({"status": "logged"}, ensure_ascii=False)
-
-    return json.dumps({"error": f"unknown tool: {name}"})
+    except subprocess.TimeoutExpired:
+        return {"status": "timeout", "reason": "Fulfillment subprocess exceeded 10 minutes"}
+    except FileNotFoundError:
+        return {"status": "claude_not_found", "reason": "claude CLI not found in PATH. Install Claude Code CLI."}
+    finally:
+        if prompt_file.exists():
+            prompt_file.unlink()
 
 
 def fulfill_order(order: dict) -> dict:
-    """Run the 7-step fulfillment loop for a single order."""
+    """Fulfill a single order: record, spawn Claude subprocess, track result."""
     whop_id = order.get("id", "")
     topic = order.get("metadata", {}).get("topic", "")
-    if not topic:
-        # Fallback: ask the buyer
-        from agent.tools.poll_orders import send_message
-        send_message(whop_id, "What cloud-native topic would you like the wiki on? (e.g. Cilium, Gateway API, Argo CD)")
-        return {"status": "waiting_for_topic", "order_id": whop_id}
-
     paid_at = order.get("created_at", datetime.utcnow().isoformat())
-    record_order(whop_id, topic, paid_at)
 
-    messages = [
-        {
-            "role": "user",
-            "content": f"New paid order! Order ID: {whop_id}, Topic: '{topic}'. "
-                       f"Research this topic, compile a wiki, publish it, and deliver the link to the buyer. "
-                       f"Log your key decisions as you go.",
-        }
-    ]
+    record_order(whop_id, topic or "unknown", paid_at)
+    log_decision(
+        f"Started fulfillment for order {whop_id[:8]}",
+        f"Topic: {topic or 'TBD'}",
+        "Claude subprocess fulfills and delivers wiki",
+    )
 
-    # Run the tool-calling loop (max 15 tool calls to prevent runaway)
-    compiled_result = None
-    for _ in range(15):
-        response = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            system=SYSTEM_PROMPT,
-            messages=messages,
-            tools=_tool_specs(),
-            max_tokens=4096,
+    result = spawn_claude_fulfillment(order)
+
+    if result.get("status") == "fulfilled":
+        page_url = f"wiki/concepts/{topic.lower().replace(' ', '-')}.md" if topic else ""
+        mark_delivered(whop_id, page_url, cost_usd=3.0)
+        log_decision(
+            f"Order {whop_id[:8]} fulfilled",
+            f"Topic: {topic}",
+            "Delivered",
+            result.get("status"),
+        )
+    else:
+        log_decision(
+            f"Order {whop_id[:8]} FAILED",
+            result.get("reason", result.get("status", "unknown")),
+            "Delivered",
+            f"FAILED: {json.dumps(result)[:200]}",
         )
 
-        # Collect tool calls
-        tool_calls = []
-        for block in response.content:
-            if block.type == "tool_use":
-                tool_calls.append(block)
-
-        if not tool_calls:
-            # No more tools — agent is done
-            break
-
-        # Execute tools and build next message
-        tool_results = []
-        for tc in tool_calls:
-            result = _handle_tool(tc.name, tc.input if isinstance(tc.input, dict) else {})
-            tool_results.append({
-                "type": "tool_result",
-                "tool_use_id": tc.id,
-                "content": result,
-            })
-
-        # Append assistant response and tool results
-        messages.append({"role": "assistant", "content": [
-            block.model_dump() if hasattr(block, "model_dump") else block
-            for block in response.content
-        ]})
-        messages.append({"role": "user", "content": tool_results})
-
-    # Git commit the wiki changes
-    try:
-        import subprocess
-        subprocess.run(["git", "add", "."], capture_output=True, cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        subprocess.run(["git", "commit", "-m", f"wiki: {topic} (order {whop_id[:8]})"], capture_output=True, cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    except Exception:
-        pass
-
-    return {"status": "fulfilled", "order_id": whop_id, "topic": topic}
+    return result
 
 
 def run_loop(poll_interval: int = 30):
-    """Main polling loop — checks for new orders and fulfills them."""
+    """Main polling loop — check for new orders, spawn Claude to fulfill."""
     log_decision(
-        "Started orchestrator loop",
-        "Begin polling for paid orders",
-        "Process all pending orders and deliver wikis",
+        "Orchestrator started",
+        "Python loop polling Whop, spawning Claude subprocesses for fulfillment",
+        "All paid orders fulfilled autonomously",
     )
 
-    print(f"[{datetime.utcnow().isoformat()}] CNCF Wiki Desk agent started. Polling every {poll_interval}s...")
+    print(f"[{datetime.utcnow().isoformat()}] CNCF Wiki Desk orchestrator started")
+    print(f"  Polling Whop every {poll_interval}s")
+    print(f"  Project: {PROJECT_ROOT}")
+    print()
 
     while True:
         try:
@@ -242,28 +210,29 @@ def run_loop(poll_interval: int = 30):
             paid = [o for o in orders if o.get("status") == "paid"]
 
             if paid:
-                print(f"  Found {len(paid)} new paid order(s)")
+                print(f"  [{datetime.utcnow().strftime('%H:%M:%S')}] {len(paid)} new paid order(s)")
                 for order in paid:
-                    print(f"  Fulfilling order {order.get('id', '?')}...")
+                    whop_id = order.get("id", "?")
+                    topic = order.get("metadata", {}).get("topic", "TBD")
+                    print(f"    → Fulfilling {whop_id[:12]}... (topic: {topic})")
                     result = fulfill_order(order)
-                    print(f"  Result: {result.get('status')}")
+                    print(f"    ← Result: {result.get('status')}")
             else:
-                print(f"  [{datetime.utcnow().strftime('%H:%M:%S')}] No new orders")
+                print(f"  [{datetime.utcnow().strftime('%H:%M:%S')}] No new orders", end="\r")
 
         except KeyboardInterrupt:
-            print("\nShutting down...")
+            print("\n\nShutting down...")
+            log_decision("Orchestrator stopped", "Keyboard interrupt", "clean shutdown", "stopped")
             break
         except Exception as e:
-            print(f"  Error in loop: {e}")
+            print(f"  ERROR: {e}")
             log_decision("Loop error", str(e), "recover", "retrying")
 
         time.sleep(poll_interval)
 
 
 if __name__ == "__main__":
-    # Write marketing copy on startup
-    write_copy("./output")
-    print("Marketing copy written to ./output/")
-
-    # Start the fulfillment loop
+    from agent.tools.write_copy import write_copy
+    write_copy(str(PROJECT_ROOT / "output"))
+    print("Marketing copy written.\n")
     run_loop()
