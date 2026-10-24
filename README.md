@@ -66,6 +66,7 @@ python -m agent.orchestrator         # polls Whop and fulfills orders
 streamlit run dashboard.py           # orders, revenue, clarity before/after, decisions, wiki diff
 mkdocs serve                         # preview the wiki site locally
 python -m agent.tools.verify_citations   # check every timestamp citation
+python -m agent.seed_wiki                # agent researches + publishes the Agent Sandbox page cluster
 ```
 
 **Deploy the wiki:** GitHub Pages builds the MkDocs site on every push to `main`
