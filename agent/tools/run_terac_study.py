@@ -263,14 +263,49 @@ def avg(values: list) -> float | None:
 
 # ---------- commands ----------
 
-def cmd_launch(round_no: int, count: int, dry_run: bool):
+def terac_step(prompt: str, step: str, round_no: int, manual: bool, result_file: str | None,
+               timeout: int) -> dict | None:
+    """Run a step that needs the Terac MCP tools.
+
+    Normally a background `claude -p` does it. If Terac's browser sign-in isn't available to
+    background runs, --manual writes the prompt to a file for you to paste into an interactive
+    Claude Code session (which saves its JSON answer), and --result reads that answer back.
+    """
+    from agent.claude_runner import parse_last_json, run_claude
+
+    out = STUDIES_DIR / f"round{round_no}_{step}_result.json"
+    if result_file:
+        text = Path(result_file).read_text(encoding="utf-8")
+        result = parse_last_json(text) if not text.lstrip().startswith("{") else json.loads(text)
+        if not result:
+            sys.exit(f"No JSON object found in {result_file}")
+        return result
+    if manual:
+        prompt_file = STUDIES_DIR / f"round{round_no}_{step}_prompt.md"
+        prompt_file.write_text(
+            prompt + f"\n\nAlso save that final JSON object, exactly, to the file {out.resolve()}\n",
+            encoding="utf-8")
+        flag = "launch" if step == "launch" else "collect"
+        print(f"Manual Terac step. In an interactive Claude Code session (signed in to Terac via /mcp):\n"
+              f"  1. Paste the contents of {prompt_file}\n"
+              f"  2. When it finishes, run: python -m agent.tools.run_terac_study {flag} "
+              f"--round {round_no} --result {out}")
+        return None
+    return run_claude(prompt, timeout=timeout)
+
+
+def cmd_launch(round_no: int, count: int, dry_run: bool, manual: bool = False, result_file: str | None = None):
     from agent.claude_runner import run_claude
     from agent.db import log_decision
 
     if state_path(round_no).exists() and load_state(round_no).get("status") == "launched":
         sys.exit(f"Round {round_no} is already launched; run collect")
 
-    if round_no == 1:
+    if result_file:
+        # Second half of a --manual launch: the study text is already saved as a draft
+        state = load_state(round_no)
+        items, variant_kind, count = state["items"], state["variant_kind"], state["count"]
+    elif round_no == 1:
         items = pick_items(DEFAULT_PAGE, ITEMS_PER_ROUND)
         result = run_claude(variants_prompt(items), timeout=300)
         variants = {v["i"]: v["text"] for v in result.get("variants", [])}
@@ -287,19 +322,23 @@ def cmd_launch(round_no: int, count: int, dry_run: bool):
                           "variant": current_section_text(it["page"], it["section"])})
         variant_kind = "agent's rewrite after round 1 feedback"
 
-    assign_labels(items, seed=round_no)
-    task_text = build_task_text(items)
-    state = {"round": round_no, "variant_kind": variant_kind, "count": count,
-             "created_at": datetime.now(timezone.utc).isoformat(), "items": items, "task_text": task_text,
-             "status": "draft"}
-    save_state(round_no, state)
+    if not result_file:
+        assign_labels(items, seed=round_no)
+        task_text = build_task_text(items)
+        state = {"round": round_no, "variant_kind": variant_kind, "count": count,
+                 "created_at": datetime.now(timezone.utc).isoformat(), "items": items, "task_text": task_text,
+                 "status": "draft"}
+        save_state(round_no, state)
 
     if dry_run:
-        print(task_text)
+        print(state["task_text"])
         print(f"\n[dry run] {len(items)} items, {count} respondents. Saved {state_path(round_no)}")
         return
 
-    result = run_claude(launch_prompt(task_text, count, ROUND_BUDGET_USD), timeout=900)
+    result = terac_step(launch_prompt(state["task_text"], count, ROUND_BUDGET_USD), "launch", round_no,
+                        manual, result_file, timeout=900)
+    if result is None:
+        return
     state.update({k: result.get(k) for k in ("request_id", "opportunity_id", "cpi_usd", "total_usd",
                                              "timeline_hours", "dashboard_url", "reason")})
     state["status"] = result.get("status", "failed")
@@ -313,12 +352,13 @@ def cmd_launch(round_no: int, count: int, dry_run: bool):
     print(json.dumps(result, indent=2))
 
 
-def cmd_collect(round_no: int):
-    from agent.claude_runner import run_claude
+def cmd_collect(round_no: int, manual: bool = False, result_file: str | None = None):
     from agent.db import get_db
 
     state = load_state(round_no)
-    result = run_claude(collect_prompt(state), timeout=300)
+    result = terac_step(collect_prompt(state), "collect", round_no, manual, result_file, timeout=300)
+    if result is None:
+        return
     submissions = result.get("submissions")
     if submissions is None:
         sys.exit(f"Could not read submissions: {json.dumps(result)[:500]}")
@@ -407,14 +447,18 @@ def main():
     p_launch.add_argument("--dry-run", action="store_true", help="build the study text without calling Terac")
     p_collect = sub.add_parser("collect")
     p_collect.add_argument("--round", type=int, choices=[1, 2], required=True)
+    for p in (p_launch, p_collect):
+        p.add_argument("--manual", action="store_true",
+                       help="write the Terac prompt to paste into interactive Claude Code instead of running it")
+        p.add_argument("--result", help="JSON answer saved by a --manual run")
     sub.add_parser("apply")
     sub.add_parser("report")
     args = parser.parse_args()
 
     if args.cmd == "launch":
-        cmd_launch(args.round, args.count, args.dry_run)
+        cmd_launch(args.round, args.count, args.dry_run, args.manual, args.result)
     elif args.cmd == "collect":
-        cmd_collect(args.round)
+        cmd_collect(args.round, args.manual, args.result)
     elif args.cmd == "apply":
         cmd_apply()
     else:
