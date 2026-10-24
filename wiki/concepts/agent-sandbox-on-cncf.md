@@ -3,75 +3,83 @@ title: Agent Sandbox on CNCF
 summary: How CNCF projects provide secure, isolated runtime environments for AI agents at scale.
 sources:
   - {video: "aFX_6HL_i80", t: 0, speaker: "Xu Wang (Ant Group) & Yu Hu (JAPAN AI)", year: "2026"}
-  - {video: "SomP92JWPmE", t: 0, speaker: "Christian Posta", year: "2026"}
-  - {video: "", t: 0, speaker: "Rahul Jadhav (Accuknox)", year: "2025"}
   - {video: "", t: 0, speaker: "Craig McLuckie (Stacklok)", year: "2026"}
-links: [agent-substrate, mecatl, kagent, cloud-native-agentic-standards]
+  - {video: "", t: 0, speaker: "Rahul Jadhav (Accuknox)", year: "2025"}
+links: [agent-substrate, mecatl, kagent, kata-containers, cloud-native-agentic-standards]
 updated: 2026-10-24
 clarity_score: 0.0
 ---
 
 # Agent Sandbox on CNCF
 
-> How the CNCF ecosystem provides secure, isolated runtime environments for running AI agents at scale.
+> How the CNCF ecosystem provides secure, isolated runtime environments for AI agents at scale.
 
-## The problem
+## What is an agent sandbox?
 
-AI agents need isolated environments to execute code, call tools, and interact with external systems — without risking the host or each other. Running one agent on a laptop is simple. Running hundreds or millions of agents in production requires a different architecture: isolated, governable, and resilient.
+An agent sandbox is an isolated runtime environment where AI agents execute code, call tools, and process data — without risking the host or other tenants. At enterprise scale, sandboxes must enforce **strong isolation** (separate kernels), **data boundaries** (no cross-tenant leaks), and **fast startup** (seconds, not minutes).
 
-## CNCF projects addressing this
+## The two defining ideas
+
+Xu Wang and Yu Hu (Ant Group / Japan AI) presented the foundational thinking at KubeCon [▶ 58:50](https://www.youtube.com/watch?v=aFX_6HL_i80&t=3500s):
+
+1. **Lifecycle** — A sandbox has a clear lifecycle: creation, execution, disposal. Once disposed, no data persists. [▶ 58:50](https://www.youtube.com/watch?v=aFX_6HL_i80&t=3500s)
+2. **Strong isolation** — Needs a separate kernel. "Namespace and cgroup isolation does not satisfy our requirements. The container uses the same kernel." [▶ 61:34](https://www.youtube.com/watch?v=aFX_6HL_i80&t=2364s)
+
+## Why containers aren't enough
+
+Containers share the host kernel. Xu Wang explains: "If untrusted code exploits the kernel, it will just affect all the containers." Their solution: **VM-based sandboxes** where each sandbox gets its own guest kernel. [▶ 7:57](https://www.youtube.com/watch?v=aFX_6HL_i80&t=477s)
+
+Trade-off: "It will take more startup time and more memory. But this kind of overhead should be solved by the technology." [▶ 8:51](https://www.youtube.com/watch?v=aFX_6HL_i80&t=531s)
+
+## Real-world architecture (Japan AI)
+
+Xu Wang's team built a production agent sandbox on open source:
+- **Kata Containers** — VM-backed container runtime (Open Infra Foundation project) [▶ 12:28](https://www.youtube.com/watch?v=aFX_6HL_i80&t=748s)
+- **containerd + KVM** — container runtime and hypervisor [▶ 11:45](https://www.youtube.com/watch?v=aFX_6HL_i80&t=705s)
+- **Nydus + Dragonfly** — image distribution for fast startup [▶ 15:22](https://www.youtube.com/watch?v=aFX_6HL_i80&t=922s)
+- **Kubernetes** — orchestration of sandbox resources [▶ 13:13](https://www.youtube.com/watch?v=aFX_6HL_i80&t=793s)
+
+Result: full environment setup in **1 minute 40 seconds** from scratch. [▶ 21:30](https://www.youtube.com/watch?v=aFX_6HL_i80&t=1290s)
+
+## Security boundaries
+
+For multi-tenant agent serving, data isolation is critical: "There is a lot of user sensitive data. We must make sure it never leaks to other users, other tenants." [▶ 3:37](https://www.youtube.com/watch?v=aFX_6HL_i80&t=217s)
+
+SaaS sandboxes offer a quick win but introduce risk: "The data is leaving our control." [▶ 5:05](https://www.youtube.com/watch?v=aFX_6HL_i80&t=305s)
+
+## Sandboxing with LSM-BPF
+
+Rahul Jadhav (Accuknox) presented at KubeCon India 2025 on using **Linux Security Modules + BPF** to sandbox agentic AI at the kernel level — enforcing security policies via eBPF programs without full VM overhead. [▶](https://confpad.io/conferences/kubecon-cloudnativecon-india-2025/sandboxing-agentic-ai-with-lsm-bpf)
+
+## CNCF projects in the stack
 
 ### Agent Substrate (Sandbox project)
 
-A secure-by-default agent execution runtime designed for **running millions of sandboxes** on Kubernetes. Accepted as a CNCF Sandbox project in 2026.
+A secure-by-default agent execution runtime for **running millions of sandboxes** on Kubernetes. Accepted as a CNCF Sandbox project in 2026. [▶](https://github.com/agent-substrate/substrate)
 
-- **774 contributors**, 130 contributing organizations, 5,716 GitHub stars (as of Oct 2026) [▶](https://github.com/agent-substrate/substrate)
+- 774 contributors, 130 contributing organizations, 5,716 GitHub stars
 - Designed for high-density, low-latency agent workloads
-- Runs as a distributed system on Kubernetes
 - Provides execution isolation without requiring a full VM per agent
 
-### kagent + Agent Substrate integration
+### kagent (CNCF)
 
-At KubeCon, Solo.io demonstrated running **sandboxed agents with kagent and Agent Substrate** — combining Kubernetes-native agent orchestration with the substrate's sandbox runtime. [▶](https://www.solo.io/blog/highlights-from-kubecon-cloudnativecon-north-america-2025)
+An open source programming framework for running AI agents in Kubernetes. Accepted May 2025. Paired with Agent Substrate for sandboxed agent execution. [▶](https://www.cncf.io/projects/kagent/)
 
-### Mecatl — Cloud-Native Agent Harness
+### Mecatl (Stacklok)
 
-Open-sourced by Stacklok (Craig McLuckie, Sept 2026). A cloud-native agent harness built as a distributed system from the start:
-
-- Separates the **agent loop** (reasoning, tool dispatch, permissions) from hosting, exposure, and security
-- Supports terminal, API, and application clients against the same runtime
-- Sessions survive worker failures (turn-level durability)
-- Tool ecosystem governed through an explicit catalog with permission boundaries
-- **Identity**: proposes SPIFFE trust domain encoding full delegation chain in JWT
-- Resource: [github.com/stacklok/mecatl](https://github.com/stacklok/mecatl) | [mecatl.dev](https://mecatl.dev/)
-
-### Cloud Native Agentic Standards (CNCF blog, Mar 2026)
-
-The CNCF published guidance on cloud-native agentic patterns:
-- Use **mTLS** to secure all inter-service and agent-tool communications
-- Deploy agents in **isolated runtime environments** (containers, sandboxes)
-- Treat prompts as supply-chain artifacts (versioned, signed, attributable)
-
-Resource: [CNCF blog](https://www.cncf.io/blog/2026/03/23/cloud-native-agentic-standards/)
-
-### Sandbox for Agentic Application (KubeCon talk)
-
-**"Sandbox for Agentic Application With Cloud Native Stack"** — Xu Wang (Ant Group) & Yu Hu (JAPAN AI). Live demo of running agent sandboxes on a cloud-native stack at KubeCon. [▶](https://www.youtube.com/watch?v=aFX_6HL_i80)
-
-### Sandboxing Agentic AI with LSM-BPF (KubeCon India 2025)
-
-Rahul Jadhav (Accuknox) presented using Linux Security Modules and BPF to sandbox agentic AI workloads — kernel-level isolation for agents. [▶](https://confpad.io/conferences/kubecon-cloudnativecon-india-2025/sandboxing-agentic-ai-with-lsm-bpf)
+Cloud-native agent harness built as a distributed system. Separates the agent loop from hosting and security. Supports SPIFFE identity, tool catalogs, and turn-level session durability. [▶](https://github.com/stacklok/mecatl)
 
 ## Key patterns
 
 | Pattern | Implementation |
 |---------|---------------|
-| **Isolation** | Agent Substrate sandboxes, container runtimes |
-| **Identity** | SPIFFE trust domains, JWT delegation chains |
-| **Governance** | Mecatl tool catalog with permission boundaries |
+| **Isolation** | VM-based sandboxes (Kata), LSM-BPF, Agent Substrate |
+| **Identity** | SPIFFE trust domains, JWT delegation chains (Mecatl) |
+| **Governance** | Tool catalogs with permission boundaries |
 | **Resilience** | Session state in durable storage, worker replaceability |
 | **Scale** | Kubernetes-native, millions of sandboxes |
+| **Startup** | Nydus/Dragonfly image distribution, < 2 min provisioning |
 
 ## Disagreements
 
-> ⚠ The CNCF ecosystem is still converging on standards. Mecatl proposes one architecture (distributed harness with SPIFFE identity), while Agent Substrate focuses on the lower-level sandbox runtime. These are complementary but represent different layers of the stack. kagent + Agent Substrate integration shows one path; Mecatl shows another.
+> ⚠ Two schools of thought exist on isolation strength. Xu Wang advocates VM-based isolation ("containers use the same kernel") while Rahul Jadhav advocates kernel-level enforcement via LSM-BPF (lighter weight, no VM overhead). The right choice depends on your trust model: VMs for zero-trust multi-tenant, LSM-BPF for trusted-tenant performance.

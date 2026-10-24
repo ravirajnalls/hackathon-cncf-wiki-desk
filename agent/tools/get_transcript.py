@@ -30,24 +30,25 @@ def get_transcript(video_url: str, metadata: dict | None = None) -> dict:
     if video_ingested(video_id):
         return {"video_id": video_id, "chunks_ingested": 0, "status": "already_ingested"}
 
+    api = YouTubeTranscriptApi()
     try:
-        transcript = YouTubeTranscriptApi.get_transcript(video_id, languages=["en"])
+        fetched = api.fetch(video_id, languages=["en"])
     except (TranscriptsDisabled, NoTranscriptFound) as e:
         return {"video_id": video_id, "error": str(e)}
     except Exception as e:
         return {"video_id": video_id, "error": str(e)}
 
-    # Merge short captions into ~60s chunks for better FTS search
+    # Merge short captions into ~45s chunks for better FTS search
     chunks = []
     current_text = ""
     current_start = 0.0
     current_end = 0.0
 
-    for entry in transcript:
+    for snippet in fetched:
         if not current_text:
-            current_start = entry["start"]
-        current_text += " " + entry["text"]
-        current_end = entry["start"] + entry.get("duration", 0)
+            current_start = snippet.start
+        current_text += " " + snippet.text
+        current_end = snippet.start + snippet.duration
 
         if current_end - current_start >= 45:  # ~45s chunks
             chunks.append({
