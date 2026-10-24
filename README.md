@@ -72,6 +72,16 @@ python -m agent.tools.verify_citations   # check every timestamp citation
 (`.github/workflows/pages.yml`). The agent pushes after each order, so each new page goes
 live a minute later.
 
+## Use it inside Claude (MCP server)
+
+`mcp_server/wiki_desk_mcp.py` lets Claude search and read the wiki, and order new topics:
+`list_topics`, `search_wiki`, `get_page` (markdown with timestamp citations) and `order_wiki`
+(returns the Whop checkout link).
+
+```bash
+claude mcp add wiki-desk -- uvx --with "mcp>=1.2,<2" --with requests python mcp_server/wiki_desk_mcp.py
+```
+
 ## Architecture
 
 Python owns the loop, state and resumability; a headless Claude Code subprocess
