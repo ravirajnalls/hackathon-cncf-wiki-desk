@@ -1,7 +1,8 @@
 # CNCF Wiki Desk
 
-**An agent-run research desk.** Pay $3 on Whop, name any cloud-native topic, and an
-agent researches KubeCon/CNCF talks and delivers a wiki where every claim links to the
+**An agent-run research desk.** Pay $3 on Whop, pick a CNCF open source project (Kubernetes,
+Cilium, Argo, OpenTelemetry, Prometheus, Envoy, Istio, Kyverno, kagent, Agent Substrate, or any
+other project in the CNCF landscape), and an agent researches KubeCon/CNCF talks and delivers a wiki where every claim links to the
 exact moment in the talk. Every order makes the next one faster and better.
 
 Built solo for Terac's Zero Human Company Hackathon NYC (Oct 24, 2026).
@@ -16,7 +17,8 @@ Built solo for Terac's Zero Human Company Hackathon NYC (Oct 24, 2026).
 | Job | How |
 | --- | --- |
 | Sell | Whop checkout; the orchestrator polls paid orders and asks for a topic if missing |
-| Research | Exa finds 8–10 KubeCon/CNCF talks; captions are pulled with timestamps into SQLite FTS5 |
+| Scope | The topic is matched against the 231 CNCF projects in the official landscape (`agent/tools/cncf_projects.py`); anything else gets a polite reply with options |
+| Research | CNCF sources only: Exa searches the CNCF YouTube channel (KubeCon + CloudNativeCon) plus cncf.io, kubernetes.io and the project's own docs; captions are pulled with timestamps into SQLite FTS5 |
 | Build | Claude compiles a wiki page: YAML frontmatter, a `[▶ MM:SS]` citation on every claim, a Disagreements section when talks conflict |
 | Publish & deliver | Commits and pushes the wiki (GitHub Pages rebuilds the MkDocs site), then messages the buyer the link on Whop |
 | Improve with humans | Terac general-population panels rate clarity; the agent rewrites the wiki and learns writing rules from their feedback |
@@ -111,7 +113,8 @@ agent/
   style_guide.md         # writing rules learned from Terac (created by `apply`)
   tools/
     poll_orders.py       # Whop order intake
-    find_sources.py      # Exa discovery
+    cncf_projects.py     # CNCF landscape: project matching + allowed source domains
+    find_sources.py      # Exa discovery (CNCF YouTube channel + CNCF/project docs)
     get_transcript.py    # YouTube captions + timestamps
     compile_pages.py     # wiki ops (create/update/flag_conflict)
     publish_wiki.py      # MkDocs build + public page URLs

@@ -3,7 +3,7 @@
 Grows the wiki around a hub page so orders on nearby topics reuse existing memory.
 
   python -m agent.seed_wiki                      # default Agent Sandbox cluster
-  python -m agent.seed_wiki "gVisor" "Kata Containers"
+  python -m agent.seed_wiki "Cilium for AI agents" "Argo Workflows for agents"
   python -m agent.seed_wiki --list               # show the default topics
 """
 
@@ -18,18 +18,19 @@ from agent.claude_runner import run_claude
 from agent.db import log_decision
 from agent.tools.compile_pages import _slugify
 from agent.tools.publish_wiki import get_page_url
+from agent.tools.cncf_projects import match_projects
 from agent.tools.run_terac_study import style_guide_text
 
 HUB = "concepts/agent-sandbox-on-cncf.md"
 
-# Subtopics a reader of the Agent Sandbox page asks about next
+# Subtopics a reader of the Agent Sandbox page asks about next; each names a CNCF project
 AGENT_SANDBOX_TOPICS = [
     "Kubernetes Agent Sandbox (kubernetes-sigs/agent-sandbox)",
-    "gVisor for AI agent isolation",
-    "Kata Containers for AI agents",
-    "Firecracker microVMs for agent sandboxes",
     "kagent: AI agents on Kubernetes",
-    "Securing MCP tool calls in agent sandboxes",
+    "Agent Substrate: secure-by-default agent runtime",
+    "Falco runtime security for AI agents",
+    "Kyverno policies for AI agent workloads",
+    "OpenTelemetry tracing for AI agents",
 ]
 
 
@@ -37,20 +38,23 @@ def topic_slug(topic: str) -> str:
     return _slugify(topic.split("(")[0].strip())
 
 
-def seed_prompt(topic: str) -> str:
+def seed_prompt(topic: str, projects: str) -> str:
     slug = topic_slug(topic)
     return f"""You are the research agent for CNCF Wiki Desk, an autonomous company that sells cited
 wikis on cloud-native topics. Grow the wiki around the hub page wiki/{HUB}.
 Working directory: {PROJECT_ROOT}
 
 TOPIC: {topic}
+CNCF project(s): {projects}
 
 1. READ FIRST: wiki/index.md and wiki/{HUB}. Reuse what's there; don't repeat it, link to it.
    If wiki/concepts/{slug}.md already exists, update it instead of rewriting.
 
-2. DISCOVER: find 5-8 sources: KubeCon / CNCF talks on YouTube first, then official project docs
-   and CNCF blog posts. Prefer 2024-2026 material. Use the Exa MCP if available, otherwise:
-     python -c "from agent.tools.find_sources import find_sources; import json; print(json.dumps(find_sources('{topic}', 10), indent=1))"
+2. DISCOVER: find 5-8 sources from CNCF sources ONLY: talks from the CNCF YouTube channel
+   (KubeCon + CloudNativeCon recordings) first, then cncf.io, kubernetes.io and the official
+   docs/GitHub of {projects}. Prefer 2024-2026 material. Run:
+     python -m agent.tools.find_sources "{topic}"
+   If you search with the Exa MCP instead, keep to those sources.
 
 3. INGEST: for each YouTube talk run
      python -c "from agent.tools.get_transcript import get_transcript; print(get_transcript('URL'))"
@@ -96,8 +100,12 @@ def main():
         return
 
     for i, topic in enumerate(topics, 1):
-        print(f"[{i}/{len(topics)}] Researching: {topic}", flush=True)
-        result = run_claude(seed_prompt(topic), timeout=900)
+        projects = ", ".join(p["name"] for p in match_projects(topic))
+        if not projects:
+            print(f"[{i}/{len(topics)}] Skipping '{topic}': not a CNCF project", flush=True)
+            continue
+        print(f"[{i}/{len(topics)}] Researching: {topic} ({projects})", flush=True)
+        result = run_claude(seed_prompt(topic, projects), timeout=900)
         status = result.get("status")
         slug = result.get("slug") or topic_slug(topic)
         print(f"    -> {status}: {get_page_url(slug) if status == 'published' else result.get('reason') or result.get('stderr') or result.get('stdout', '')[-300:]}", flush=True)

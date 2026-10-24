@@ -30,6 +30,7 @@ from agent.claude_runner import run_claude
 from agent.tools.run_terac_study import style_guide_text
 from agent.tools.compile_pages import _slugify
 from agent.tools.publish_wiki import get_page_url
+from agent.tools.cncf_projects import CHECKOUT_OPTIONS, match_projects
 
 
 _checkout_topics: dict[str, str] = {}
@@ -82,9 +83,25 @@ Order ID: {whop_id}
 Topic: NOT YET PROVIDED
 
 Use the Whop MCP to send this message to the buyer:
-"What cloud-native topic would you like the wiki on? (e.g. Cilium, Gateway API, Argo CD)"
+"Which CNCF project would you like the wiki on? (e.g. {', '.join(CHECKOUT_OPTIONS)})"
 
 Then report back that we're waiting for the topic."""
+
+    projects = match_projects(topic)
+    if not projects:
+        return f"""You are fulfilling a CNCF Wiki Desk order via MCP tools.
+
+Order ID: {whop_id}
+Topic: {topic}
+
+CNCF Wiki Desk only covers CNCF open source projects, and "{topic}" doesn't match one.
+Use the Whop MCP to send this message to the buyer:
+"Thanks for your order! CNCF Wiki Desk covers CNCF open source projects, and we couldn't match
+'{topic}' to one. Reply with a CNCF project (e.g. {', '.join(CHECKOUT_OPTIONS)}) and we'll build
+your wiki, or ask for a refund."
+
+Then output: {{"status": "out_of_scope", "order_id": "{whop_id}", "topic": "{topic}"}}"""
+    project_names = ", ".join(p["name"] for p in projects)
 
     return f"""You are the fulfillment agent for CNCF Wiki Desk — an autonomous, agent-run company.
 Your job: research a cloud-native topic, compile a cited wiki, and deliver it to the buyer.
@@ -92,6 +109,7 @@ Your job: research a cloud-native topic, compile a cited wiki, and deliver it to
 === ORDER ===
 Order ID: {whop_id}
 Topic: {topic}
+CNCF project(s): {project_names}
 Product ID: {product_id}
 Working directory: {PROJECT_ROOT}
 
@@ -105,9 +123,13 @@ You have access to:
 === 6 STEPS — DO ALL OF THEM, IN ORDER ===
 
 STEP 1 — DISCOVER SOURCES
-Find 8-10 KubeCon/CNCF talks and official docs on "{topic}".
-Use Exa search: query = "CNCF {topic} KubeCon talk OR keynote OR official documentation"
-Prefer YouTube talks and CNCF blog/docs.
+Find 8-10 sources on "{topic}" from CNCF sources ONLY:
+- Talks from the CNCF YouTube channel (KubeCon + CloudNativeCon recordings), 2024-2026 first
+- cncf.io (blog, project pages), kubernetes.io, and the official docs/GitHub of {project_names}
+Run:
+  python -m agent.tools.find_sources "{topic}"
+If you search with the Exa MCP instead, keep to those sources. Skip anything else (vendor blogs,
+Medium, random YouTube channels).
 
 STEP 2 — INGEST TRANSCRIPTS
 For each YouTube URL found, run this shell command:
@@ -179,6 +201,14 @@ def fulfill_order(order: dict) -> dict:
     if not topic:
         # Subprocess only asked the buyer for a topic; retry once one arrives
         set_order_status(whop_id, "awaiting_topic")
+    elif result.get("status") == "out_of_scope":
+        set_order_status(whop_id, "out_of_scope")
+        log_decision(
+            f"Order {whop_id[:8]} out of scope",
+            f"Topic '{topic}' is not a CNCF project",
+            "Buyer picks a CNCF project or gets a refund",
+            "Asked buyer for a CNCF project",
+        )
     elif result.get("status") == "fulfilled":
         mark_delivered(whop_id, get_page_url(_slugify(topic)), cost_usd=3.0)
         log_decision(
