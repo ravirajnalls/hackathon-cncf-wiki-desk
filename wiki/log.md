@@ -4,6 +4,7 @@ Every choice the agent makes, with its reason, what it expected and what happene
 
 | Time (UTC) | Decision | Reason | Expected | Outcome |
 |------|----------|--------|----------|---------|
+| 2026-10-24 19:28:21 | Seeded wiki page: Kata Containers for AI agents | Grow the Agent Sandbox cluster so related orders reuse memory | Cited page published and linked from the hub | published: sources=7 talks=4 |
 | 2026-10-24 19:26:32 | Seeded wiki page: gVisor for AI agent isolation | Grow the Agent Sandbox cluster so related orders reuse memory | Cited page published and linked from the hub | published: sources=7 talks=3 |
 | 2026-10-24 19:25:26 | Seeded wiki page: Kubernetes Agent Sandbox (kubernetes-sigs/agent-sandbox) | Grow the Agent Sandbox cluster so related orders reuse memory | Cited page published and linked from the hub | published: sources=8 talks=3 |
 | 2026-10-24 19:06:21 | Orchestrator started | Python loop polling Whop, spawning Claude subprocesses for fulfillment | All paid orders fulfilled autonomously |  |

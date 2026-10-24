@@ -8,6 +8,7 @@
 - [Kubernetes Agent Sandbox (kubernetes-sigs/agent-sandbox)](concepts/kubernetes-agent-sandbox.md) — The SIG Apps project that adds a Sandbox CRD, templates, claims and warm pools to Kubernetes for running isolated, stateful AI agent workloads.
 - [gVisor for AI agent isolation](concepts/gvisor-for-ai-agent-isolation.md) — How gVisor's user-space application kernel sandboxes untrusted, LLM-generated code, and when to pick it over Kata Containers or plain containers.
 - [Kata Containers for AI agents](concepts/kata-containers-for-ai-agents.md) — How Kata Containers gives each AI agent sandbox its own lightweight VM and guest kernel, what Kata 4.0 changes, and when to pick it over gVisor or plain containers.
+- [Firecracker microVMs for agent sandboxes](concepts/firecracker-microvms-for-agent-sandboxes.md) — How Firecracker's minimal Rust VMM gives each AI agent sandbox its own kernel at near-container speed, how it plugs into Kata and Agent Sandbox, and when to pick it over gVisor or plain containers.
 
 ## About
 
