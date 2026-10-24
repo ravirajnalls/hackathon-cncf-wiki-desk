@@ -12,8 +12,6 @@ Architecture:
 
 import json
 import os
-import shutil
-import subprocess
 import sys
 import time
 from datetime import datetime
@@ -28,11 +26,8 @@ load_dotenv(PROJECT_ROOT / ".env")
 
 from agent.db import record_order, mark_delivered, log_decision, get_order, set_order_status
 from agent.tools.poll_orders import poll_orders as whop_poll
-
-# Tools the headless Claude subprocess may use without a permission prompt.
-# MCP entries must match your server names (check with `claude mcp list`).
-DEFAULT_ALLOWED_TOOLS = "Bash Read Write Edit Glob Grep WebFetch mcp__whop mcp__terac mcp__exa"
-ALLOWED_TOOLS = os.environ.get("CLAUDE_ALLOWED_TOOLS", DEFAULT_ALLOWED_TOOLS).split()
+from agent.claude_runner import run_claude
+from agent.tools.run_terac_study import style_guide_text
 
 
 def build_fulfillment_prompt(order: dict) -> str:
@@ -91,6 +86,7 @@ The page MUST have:
 - YAML frontmatter: title, summary, sources, updated, clarity_score
 - Every claim ends with a clickable timestamp link: [▶ MM:SS](https://youtube.com/watch?v=VID&t=SECONDSs)
 - Disagreements section if multiple speakers conflict
+{style_guide_text()}
 
 STEP 4 — PUBLISH
 Run: python -c "from agent.tools.publish_wiki import publish_wiki; print(publish_wiki())"
@@ -125,46 +121,7 @@ If you cannot complete, output: {{"status": "failed", "reason": "..."}}
 def spawn_claude_fulfillment(order: dict) -> dict:
     """Spawn a Claude Code subprocess to fulfill an order."""
     prompt = build_fulfillment_prompt(order)
-
-    # Resolve claude.cmd on Windows, which subprocess can't find by bare name
-    claude_bin = shutil.which("claude")
-    if not claude_bin:
-        return {"status": "claude_not_found", "reason": "claude CLI not found in PATH. Install Claude Code CLI."}
-
-    try:
-        result = subprocess.run(
-            # Prompt goes via stdin to avoid command-line length/quoting limits
-            [claude_bin, "-p", "--allowedTools", *ALLOWED_TOOLS],
-            input=prompt,
-            cwd=str(PROJECT_ROOT),
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            timeout=600,  # 10 min max per order
-            env={**os.environ, "CLAUDE_PROJECT_DIR": str(PROJECT_ROOT)},
-        )
-
-        output = result.stdout.strip()
-        # Try to parse JSON result from the end of output
-        for line in reversed(output.split("\n")):
-            line = line.strip()
-            if line.startswith("{") and line.endswith("}"):
-                try:
-                    return json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-
-        return {
-            "status": "unknown",
-            "stdout": output[-2000:],
-            "stderr": result.stderr[-1000:] if result.stderr else "",
-            "returncode": result.returncode,
-        }
-
-    except subprocess.TimeoutExpired:
-        return {"status": "timeout", "reason": "Fulfillment subprocess exceeded 10 minutes"}
-    except FileNotFoundError:
-        return {"status": "claude_not_found", "reason": "claude CLI not found in PATH. Install Claude Code CLI."}
+    return run_claude(prompt, timeout=600)  # 10 min max per order
 
 
 def fulfill_order(order: dict) -> dict:
