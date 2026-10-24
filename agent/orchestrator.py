@@ -12,6 +12,7 @@ Architecture:
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -21,8 +22,17 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from agent.db import record_order, mark_delivered, log_decision, pending_orders
+# Load .env before importing tools, which read env vars at import time
+from dotenv import load_dotenv
+load_dotenv(PROJECT_ROOT / ".env")
+
+from agent.db import record_order, mark_delivered, log_decision, get_order, set_order_status
 from agent.tools.poll_orders import poll_orders as whop_poll
+
+# Tools the headless Claude subprocess may use without a permission prompt.
+# MCP entries must match your server names (check with `claude mcp list`).
+DEFAULT_ALLOWED_TOOLS = "Bash Read Write Edit Glob Grep WebFetch mcp__whop mcp__terac mcp__exa"
+ALLOWED_TOOLS = os.environ.get("CLAUDE_ALLOWED_TOOLS", DEFAULT_ALLOWED_TOOLS).split()
 
 
 def build_fulfillment_prompt(order: dict) -> str:
@@ -116,16 +126,20 @@ def spawn_claude_fulfillment(order: dict) -> dict:
     """Spawn a Claude Code subprocess to fulfill an order."""
     prompt = build_fulfillment_prompt(order)
 
-    # Write prompt to a temp file to avoid shell escaping issues
-    prompt_file = PROJECT_ROOT / ".fulfillment_prompt.txt"
-    prompt_file.write_text(prompt, encoding="utf-8")
+    # Resolve claude.cmd on Windows, which subprocess can't find by bare name
+    claude_bin = shutil.which("claude")
+    if not claude_bin:
+        return {"status": "claude_not_found", "reason": "claude CLI not found in PATH. Install Claude Code CLI."}
 
     try:
         result = subprocess.run(
-            ["claude", "-p", prompt, "--print"],
+            # Prompt goes via stdin to avoid command-line length/quoting limits
+            [claude_bin, "-p", "--allowedTools", *ALLOWED_TOOLS],
+            input=prompt,
             cwd=str(PROJECT_ROOT),
             capture_output=True,
             text=True,
+            encoding="utf-8",
             timeout=600,  # 10 min max per order
             env={**os.environ, "CLAUDE_PROJECT_DIR": str(PROJECT_ROOT)},
         )
@@ -151,9 +165,6 @@ def spawn_claude_fulfillment(order: dict) -> dict:
         return {"status": "timeout", "reason": "Fulfillment subprocess exceeded 10 minutes"}
     except FileNotFoundError:
         return {"status": "claude_not_found", "reason": "claude CLI not found in PATH. Install Claude Code CLI."}
-    finally:
-        if prompt_file.exists():
-            prompt_file.unlink()
 
 
 def fulfill_order(order: dict) -> dict:
@@ -163,6 +174,7 @@ def fulfill_order(order: dict) -> dict:
     paid_at = order.get("created_at", datetime.utcnow().isoformat())
 
     record_order(whop_id, topic or "unknown", paid_at)
+    set_order_status(whop_id, "in_progress")
     log_decision(
         f"Started fulfillment for order {whop_id[:8]}",
         f"Topic: {topic or 'TBD'}",
@@ -171,7 +183,10 @@ def fulfill_order(order: dict) -> dict:
 
     result = spawn_claude_fulfillment(order)
 
-    if result.get("status") == "fulfilled":
+    if not topic:
+        # Subprocess only asked the buyer for a topic; retry once one arrives
+        set_order_status(whop_id, "awaiting_topic")
+    elif result.get("status") == "fulfilled":
         page_url = f"wiki/concepts/{topic.lower().replace(' ', '-')}.md" if topic else ""
         mark_delivered(whop_id, page_url, cost_usd=3.0)
         log_decision(
@@ -181,6 +196,7 @@ def fulfill_order(order: dict) -> dict:
             result.get("status"),
         )
     else:
+        set_order_status(whop_id, "failed")
         log_decision(
             f"Order {whop_id[:8]} FAILED",
             result.get("reason", result.get("status", "unknown")),
@@ -189,6 +205,17 @@ def fulfill_order(order: dict) -> dict:
         )
 
     return result
+
+
+def should_fulfill(order: dict) -> bool:
+    """Skip orders already handled, so each poll doesn't re-run fulfillment."""
+    row = get_order(order.get("id", ""))
+    if row is None:
+        return True
+    if row["status"] == "awaiting_topic":
+        return bool(order.get("metadata", {}).get("topic"))
+    # delivered, in_progress and failed orders are left alone; failed ones need a manual look
+    return row["status"] == "pending"
 
 
 def run_loop(poll_interval: int = 30):
@@ -207,7 +234,7 @@ def run_loop(poll_interval: int = 30):
     while True:
         try:
             orders = whop_poll()
-            paid = [o for o in orders if o.get("status") == "paid"]
+            paid = [o for o in orders if o.get("status") == "paid" and should_fulfill(o)]
 
             if paid:
                 print(f"  [{datetime.utcnow().strftime('%H:%M:%S')}] {len(paid)} new paid order(s)")

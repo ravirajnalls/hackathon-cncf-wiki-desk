@@ -72,6 +72,19 @@ def record_order(whop_id: str, topic: str, paid_at: str):
             "INSERT OR IGNORE INTO orders (whop_id, topic, paid_at) VALUES (?, ?, ?)",
             (whop_id, topic, paid_at),
         )
+        # The buyer may supply the topic after the first poll
+        if topic and topic != "unknown":
+            conn.execute("UPDATE orders SET topic = ? WHERE whop_id = ?", (topic, whop_id))
+
+
+def get_order(whop_id: str):
+    with get_db() as conn:
+        return conn.execute("SELECT * FROM orders WHERE whop_id = ?", (whop_id,)).fetchone()
+
+
+def set_order_status(whop_id: str, status: str):
+    with get_db() as conn:
+        conn.execute("UPDATE orders SET status = ? WHERE whop_id = ?", (status, whop_id))
 
 
 def mark_delivered(whop_id: str, delivery_url: str, cost_usd: float):

@@ -3,13 +3,15 @@
 import os
 import requests
 
-WHOP_API_KEY = os.environ["WHOP_API_KEY"]
+WHOP_API_KEY = os.environ.get("WHOP_API_KEY", "")
 WHOP_BUSINESS_ID = os.environ.get("WHOP_BUSINESS_ID", "")
 WHOP_MODE = os.environ.get("WHOP_MODE", "sandbox")
 WHOP_BASE = "https://api.whop.com/v1"
 
 
 def _headers():
+    if not WHOP_API_KEY:
+        raise RuntimeError("WHOP_API_KEY is not set: add it to .env")
     return {
         "Authorization": f"Bearer {WHOP_API_KEY}",
         "Content-Type": "application/json",
