@@ -48,6 +48,14 @@ def get_base_url() -> str:
     return os.environ.get("WIKI_BASE_URL", DEFAULT_BASE_URL).rstrip("/")
 
 
+GITHUB_REPO_URL = os.environ.get("GITHUB_REPO_URL", "https://github.com/ravirajnalls/hackathon-cncf-wiki-desk")
+
+
+def get_source_url(slug: str) -> str:
+    """GitHub URL of a concept page's markdown (its History tab shows every agent edit)."""
+    return f"{GITHUB_REPO_URL}/blob/main/wiki/concepts/{slug}.md"
+
+
 def get_page_url(slug: str) -> str:
     """Public URL of a concept page on the deployed site."""
     return f"{get_base_url()}/concepts/{slug}/"

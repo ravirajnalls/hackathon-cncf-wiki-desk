@@ -29,7 +29,7 @@ from agent.tools.poll_orders import poll_orders as whop_poll, get_checkout_answe
 from agent.claude_runner import run_claude
 from agent.tools.run_terac_study import style_guide_text
 from agent.tools.compile_pages import _slugify
-from agent.tools.publish_wiki import get_page_url
+from agent.tools.publish_wiki import get_page_url, get_source_url
 from agent.tools.cncf_projects import CHECKOUT_OPTIONS, match_projects
 
 
@@ -75,6 +75,7 @@ def build_fulfillment_prompt(order: dict) -> str:
     product_id = os.environ.get("WHOP_PRODUCT_ID", "prod_65oqcxlhZM93U")
     slug = _slugify(topic) if topic else ""
     page_url = get_page_url(slug) if topic else ""
+    source_url = get_source_url(slug) if topic else ""
 
     if not topic:
         return f"""You are fulfilling a CNCF Wiki Desk order via MCP tools.
@@ -166,6 +167,7 @@ Use Whop MCP to send the buyer this message:
   "✅ Your CNCF Wiki on '{topic}' is ready!
 
    📖 View it: {page_url}
+   🗂 Source on GitHub (with full edit history): {source_url}
 
    Every claim is cited with a clickable video timestamp. The page may take a minute to go live."
 
