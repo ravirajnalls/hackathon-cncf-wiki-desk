@@ -39,7 +39,9 @@ orders = query("SELECT whop_id, topic, paid_at, delivered_at, status, delivery_u
 decisions = query("SELECT time, decision, reason, expected, outcome FROM decisions "
                   "WHERE decision != 'test' ORDER BY id DESC")
 videos = query("SELECT video_id, title, speaker, year, ingested_at FROM videos ORDER BY ingested_at DESC")
-pages = [p for p in (ROOT / "wiki").rglob("*.md") if p.name not in ("index.md", "log.md")]
+pages = [p for p in (ROOT / "wiki").rglob("*.md")
+         if p.relative_to(ROOT / "wiki").as_posix() not in ("index.md", "log.md")
+         and "Research" not in p.parts]
 
 delivered = orders[orders["status"] == "delivered"] if not orders.empty else orders
 

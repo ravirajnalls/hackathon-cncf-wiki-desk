@@ -51,9 +51,44 @@ def get_base_url() -> str:
 GITHUB_REPO_URL = os.environ.get("GITHUB_REPO_URL", "https://github.com/ravirajnalls/hackathon-cncf-wiki-desk")
 
 
-def get_source_url(slug: str) -> str:
-    """GitHub URL of a concept page's markdown (its History tab shows every agent edit)."""
-    return f"{GITHUB_REPO_URL}/blob/main/wiki/concepts/{slug}.md"
+def topic_page_path(topic: str) -> str:
+    """Where a topic's page lives in wiki/, without .md. Pages are grouped by CNCF project:
+
+      projects/<project>/index      the project's overview ("Cilium")
+      projects/<project>/<subtopic> e.g. "Kubernetes Agent Sandbox" -> projects/kubernetes/agent-sandbox
+      guides/<topic>                topics that don't name a CNCF project
+    """
+    from agent.tools.cncf_projects import match_projects
+    from agent.tools.compile_pages import _slugify
+
+    slug = _slugify(topic.split("(")[0].strip())
+    projects = match_projects(topic)
+    if not projects:
+        return f"guides/{slug}"
+    project = _slugify(projects[0]["name"].split("(")[0].strip())
+    if slug == project:
+        return f"projects/{project}/index"
+    sub = slug.removeprefix(project + "-") or slug
+    return f"projects/{project}/{sub}"
+
+
+def index_instructions(path: str, project: str = "") -> str:
+    """How the agent files a new page into wiki/index.md and its folder's index (shared by prompts)."""
+    folder, _, name = path.rpartition("/")
+    section = ("the \"## Guides\" section" if folder == "guides" else
+               f"the \"### {project or 'project name'}\" heading under \"## CNCF projects\" (create it, in alphabetical order, if missing)")
+    folder_index = ("" if name == "index" else
+                    f"\n   Also list it in wiki/{folder}/index.md (for a project folder with no overview yet, create a"
+                    f"\n   short index.md that introduces the project in two sentences with a [docs] citation, then lists its pages).")
+    return (f"Add or update its line in wiki/index.md under {section}:"
+            f"\n     \"- [Title]({path}.md) — one-line summary\"{folder_index}"
+            f"\n   Links between pages are relative to the page's own folder, e.g. from wiki/{path}.md:"
+            f"\n     [Agent Sandbox on CNCF]({'../' * path.count('/')}guides/agent-sandbox-on-cncf.md)")
+
+
+def get_source_url(path: str) -> str:
+    """GitHub URL of a page's markdown (its History tab shows every agent edit). path: wiki-relative, no .md"""
+    return f"{GITHUB_REPO_URL}/blob/main/wiki/{path}.md"
 
 
 def order_key(whop_id: str) -> str:
@@ -67,13 +102,14 @@ def order_page_path(whop_id: str, slug: str) -> str:
 
 
 def get_order_page_url(whop_id: str, slug: str) -> str:
-    return f"{get_base_url()}/{order_page_path(whop_id, slug)}/"
+    return get_page_url(order_page_path(whop_id, slug))
 
 
 def get_order_source_url(whop_id: str, slug: str) -> str:
-    return f"{GITHUB_REPO_URL}/blob/main/wiki/{order_page_path(whop_id, slug)}.md"
+    return get_source_url(order_page_path(whop_id, slug))
 
 
-def get_page_url(slug: str) -> str:
-    """Public URL of a concept page on the deployed site."""
-    return f"{get_base_url()}/concepts/{slug}/"
+def get_page_url(path: str) -> str:
+    """Public URL of a page on the deployed site. path: wiki-relative, no .md (from topic_page_path)."""
+    path = path.removesuffix("index").strip("/")
+    return f"{get_base_url()}/{path}/" if path else f"{get_base_url()}/"

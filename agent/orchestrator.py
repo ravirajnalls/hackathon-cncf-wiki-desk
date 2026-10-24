@@ -140,9 +140,9 @@ This stores timestamped chunks in memory.db automatically. Skip videos that fail
 
 STEP 3 — COMPILE THIS BUYER'S PAGE
 This order gets its own page: wiki/{page_path}.md (create the folder).
-- Read wiki/index.md first. Reuse existing pages on related topics (wiki/concepts/ and earlier
-  orders under wiki/orders/) as a starting point, and link to them with relative links
-  like [Agent Sandbox on CNCF](../../concepts/agent-sandbox-on-cncf.md).
+- Read wiki/index.md first. Reuse existing pages on related topics (wiki/projects/, wiki/guides/
+  and earlier orders under wiki/orders/) as a starting point, and link to them with relative links
+  like [Agent Sandbox on CNCF](../../guides/agent-sandbox-on-cncf.md).
 - Do NOT edit any other page under wiki/orders/: each is a buyer's delivered copy and stays frozen.
 Then add a line under the "## Orders" section of wiki/index.md (create the section if missing):
   "- [Title]({page_path}.md) — one-line summary (order {whop_id[:12]}, {datetime.now(timezone.utc):%Y-%m-%d})"

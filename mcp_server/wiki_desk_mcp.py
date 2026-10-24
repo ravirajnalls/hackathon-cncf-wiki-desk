@@ -34,14 +34,18 @@ def _get(url: str) -> requests.Response:
 
 
 def _topics() -> list[dict]:
-    """Parse wiki/index.md lines like '- [Title](concepts/slug.md) — summary'."""
+    """Parse wiki/index.md lines like '- [Title](projects/cilium/index.md) — summary'."""
     topics = []
     for line in _get(f"{RAW}/index.md").text.splitlines():
         m = re.match(r"- \[(.+?)\]\((?:wiki/)?([\w/-]+)\.md\)\s*—\s*(.*)", line.strip())
         if m:
             title, path, summary = m.groups()
-            topics.append({"title": title, "slug": path.split("/")[-1], "path": path,
-                           "summary": summary, "url": f"{SITE}/{path}/"})
+            parts = path.split("/")
+            # A project's overview is projects/<name>/index.md; its slug is the project name
+            slug = parts[-2] if parts[-1] == "index" and len(parts) > 1 else parts[-1]
+            url_path = path.removesuffix("index").strip("/")
+            topics.append({"title": title, "slug": slug, "path": path,
+                           "summary": summary, "url": f"{SITE}/{url_path}/"})
     return topics
 
 

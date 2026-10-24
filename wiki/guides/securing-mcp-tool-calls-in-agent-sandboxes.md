@@ -44,7 +44,7 @@ In the Solo/Kyverno demo the client must complete an OAuth 2.0 login through Key
 ### 4. Sandbox where the tool runs
 
 - **Capability-based Wasm.** The Sandbox MCP approach deploys MCP servers as WebAssembly components that only get the minimal system calls they need, in deny-by-default sandboxes [▶ 02:30](https://www.youtube.com/watch?v=n_i9w_wgD7I&t=150s). Components are small enough to start instantly and scale to zero [▶ 03:15](https://www.youtube.com/watch?v=n_i9w_wgD7I&t=195s). It deploys to Kubernetes with a Helm template [▶ 04:51](https://www.youtube.com/watch?v=n_i9w_wgD7I&t=291s).
-- **Container sandboxes behind a gateway.** Alibaba's OpenKruise agent sandbox exposes code and command tools through MCP and an E2B-compatible API [▶ 20:30](https://www.youtube.com/watch?v=vi_VhZLWs9k&t=1230s). Because the code may come from malicious prompts, it uses a secure container runtime plus network policy so all incoming traffic must come from the sandbox gateway [▶ 21:56](https://www.youtube.com/watch?v=vi_VhZLWs9k&t=1316s). MCP sessions are mapped to sandboxes, which are cleaned up when the session expires [▶ 21:14](https://www.youtube.com/watch?v=vi_VhZLWs9k&t=1274s). For secrets, the LLM API key is injected into the sandbox through a file-system API instead of being kept by the agent [▶ 19:03](https://www.youtube.com/watch?v=vi_VhZLWs9k&t=1143s). For the runtimes themselves see [Kata Containers](kata-containers-for-ai-agents.md), [gVisor](gvisor-for-ai-agent-isolation.md) and the [Kubernetes Agent Sandbox](kubernetes-agent-sandbox.md).
+- **Container sandboxes behind a gateway.** Alibaba's OpenKruise agent sandbox exposes code and command tools through MCP and an E2B-compatible API [▶ 20:30](https://www.youtube.com/watch?v=vi_VhZLWs9k&t=1230s). Because the code may come from malicious prompts, it uses a secure container runtime plus network policy so all incoming traffic must come from the sandbox gateway [▶ 21:56](https://www.youtube.com/watch?v=vi_VhZLWs9k&t=1316s). MCP sessions are mapped to sandboxes, which are cleaned up when the session expires [▶ 21:14](https://www.youtube.com/watch?v=vi_VhZLWs9k&t=1274s). For secrets, the LLM API key is injected into the sandbox through a file-system API instead of being kept by the agent [▶ 19:03](https://www.youtube.com/watch?v=vi_VhZLWs9k&t=1143s). For the runtimes themselves see [Kata Containers](../related-runtimes/kata-containers-for-ai-agents.md), [gVisor](../related-runtimes/gvisor-for-ai-agent-isolation.md) and the [Kubernetes Agent Sandbox](../projects/kubernetes/agent-sandbox.md).
 
 ### Filtering and audit (emerging)
 
@@ -63,7 +63,7 @@ These layers stack. Sandbox isolation limits blast radius if a tool is compromis
 
 ## Real-world usage
 
-- Solo.io and Kyverno maintainers demoed Agent Gateway + Kyverno in front of kagent's Kubernetes tools, blocking a manifest apply to a production namespace while still allowing read tools [▶ 10:50](https://www.youtube.com/watch?v=tEAkoZpdhSc&t=650s). See [kagent](kagent-ai-agents-on-kubernetes.md).
+- Solo.io and Kyverno maintainers demoed Agent Gateway + Kyverno in front of kagent's Kubernetes tools, blocking a manifest apply to a production namespace while still allowing read tools [▶ 10:50](https://www.youtube.com/watch?v=tEAkoZpdhSc&t=650s). See [kagent](../projects/kagent/index.md).
 - Alibaba exposes sandbox code execution to reinforcement-learning jobs through MCP [▶ 19:03](https://www.youtube.com/watch?v=vi_VhZLWs9k&t=1143s).
 
 ## Disagreements

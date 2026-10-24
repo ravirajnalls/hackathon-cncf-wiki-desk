@@ -12,7 +12,7 @@ clarity_score: 0.0
 
 # gVisor for AI agent isolation
 
-> gVisor is the default isolation runtime behind Kubernetes Agent Sandbox. For the wider landscape see [Agent Sandbox on CNCF](agent-sandbox-on-cncf.md); for the Kubernetes API that uses it see [Kubernetes Agent Sandbox](kubernetes-agent-sandbox.md).
+> gVisor is the default isolation runtime behind Kubernetes Agent Sandbox. For the wider landscape see [Agent Sandbox on CNCF](../guides/agent-sandbox-on-cncf.md); for the Kubernetes API that uses it see [Kubernetes Agent Sandbox](../projects/kubernetes/agent-sandbox.md).
 
 ## What it is
 
@@ -52,6 +52,6 @@ Rules of thumb from the sources:
 
 ## Disagreements
 
-> ⚠ **What kind of thing is gVisor?** Sghiouar calls it a "micro kernel" [▶ 04:31](https://www.youtube.com/watch?v=c7rsWC8PBHM&t=271s), the docs say it is "not a VM in the everyday sense" and not a syscall filter [docs](https://gvisor.dev/docs/), and the AWS post stresses it is process-level, not hardware, isolation [docs](https://builder.aws.com/content/3ADDWTtyI2gevtzY9d2vzULAxzS/secure-agent-sandboxes-on-eks). Treat "micro kernel" as shorthand: the security boundary is software, so for zero-trust multi-tenancy compare it with Kata, as discussed in [Agent Sandbox on CNCF](agent-sandbox-on-cncf.md).
+> ⚠ **What kind of thing is gVisor?** Sghiouar calls it a "micro kernel" [▶ 04:31](https://www.youtube.com/watch?v=c7rsWC8PBHM&t=271s), the docs say it is "not a VM in the everyday sense" and not a syscall filter [docs](https://gvisor.dev/docs/), and the AWS post stresses it is process-level, not hardware, isolation [docs](https://builder.aws.com/content/3ADDWTtyI2gevtzY9d2vzULAxzS/secure-agent-sandboxes-on-eks). Treat "micro kernel" as shorthand: the security boundary is software, so for zero-trust multi-tenancy compare it with Kata, as discussed in [Agent Sandbox on CNCF](../guides/agent-sandbox-on-cncf.md).
 >
 > **Age of evidence.** Lewis's architecture talk is from 2019; check current docs for supported syscalls and platforms.

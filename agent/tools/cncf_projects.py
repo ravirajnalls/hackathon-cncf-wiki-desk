@@ -82,7 +82,7 @@ SUBPROJECTS = {
 
 
 def match_projects(topic: str) -> list[dict]:
-    """CNCF projects named in the topic, best match first."""
+    """CNCF projects named in the topic, in the order the topic names them."""
     t = f" {_norm(topic)} "
     hits = []
     for p in load_projects():
@@ -94,9 +94,11 @@ def match_projects(topic: str) -> list[dict]:
                 names.add(repo_name)
         names |= SUBPROJECTS.get(p["name"], set())
         names = {n for n in names if len(n) >= 3}
-        if any(f" {n} " in t for n in names):
-            hits.append(p)
-    return sorted(hits, key=lambda p: -len(p["name"]))
+        positions = [t.find(f" {n} ") for n in names if f" {n} " in t]
+        if positions:
+            hits.append((min(positions), -len(p["name"]), p))
+    # The project named first in the topic leads ("kagent on Kubernetes" -> kagent)
+    return [p for *_, p in sorted(hits, key=lambda h: h[:2])]
 
 
 def source_domains(projects: list[dict]) -> list[str]:

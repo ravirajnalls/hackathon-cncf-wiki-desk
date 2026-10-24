@@ -11,7 +11,7 @@ clarity_score: 0.0
 
 # kagent: AI agents on Kubernetes
 
-> kagent is the "agent as a Kubernetes resource" layer. [Agent Sandbox on CNCF](agent-sandbox-on-cncf.md) covers where untrusted agent code runs; this page covers how agents are defined, wired to tools and operated.
+> kagent is the "agent as a Kubernetes resource" layer. [Agent Sandbox on CNCF](../../guides/agent-sandbox-on-cncf.md) covers where untrusted agent code runs; this page covers how agents are defined, wired to tools and operated.
 
 ## What it is
 
@@ -31,7 +31,7 @@ Eitan Yarmush (Solo.io, kagent maintainer) boils an agent down to three things: 
 
 - **Use kagent** when platform/DevOps teams want agents for cluster operations (connectivity diagnosis, Prometheus alerts, Gateway/HTTPRoute debugging, Argo Rollouts) managed with the GitOps and RBAC they already have [docs](https://kagent.dev/docs/kagent/0.x/introduction/what-is-kagent/).
 - **Hand-rolled agent script.** Kakodkar builds a minimal agent from scratch in his 101 talk, as a learning exercise rather than the production path; for production he points to VPC endpoints, self-hosted models, API gateways and agent memory [▶ 22:40](https://www.youtube.com/watch?v=-c1bmSr5328&t=1360s).
-- **Isolation is a separate concern.** kagent defines and runs agents; it does not by itself give each agent a separate kernel. For that, pair it with a sandbox runtime: see [Kubernetes Agent Sandbox](kubernetes-agent-sandbox.md) and [Kata Containers for AI agents](kata-containers-for-ai-agents.md). Kakodkar lists kagent, Kubernetes SIGs agent sandbox and agent gateway as related efforts for the multi-cluster, multi-agent context [▶ 24:51](https://www.youtube.com/watch?v=-c1bmSr5328&t=1491s).
+- **Isolation is a separate concern.** kagent defines and runs agents; it does not by itself give each agent a separate kernel. For that, pair it with a sandbox runtime: see [Kubernetes Agent Sandbox](../kubernetes/agent-sandbox.md) and [Kata Containers for AI agents](../../related-runtimes/kata-containers-for-ai-agents.md). Kakodkar lists kagent, Kubernetes SIGs agent sandbox and agent gateway as related efforts for the multi-cluster, multi-agent context [▶ 24:51](https://www.youtube.com/watch?v=-c1bmSr5328&t=1491s).
 
 ## Real-world usage
 

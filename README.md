@@ -125,6 +125,10 @@ agent/
     log_decision.py      # decision memory
 dashboard.py             # Streamlit demo dashboard
 wiki/                    # the product + semantic memory (git)
+  guides/                #   cross-project guides (e.g. Agent Sandbox on CNCF)
+  projects/<project>/    #   one folder per CNCF project: index.md overview + subtopic pages
+  related-runtimes/      #   non-CNCF tech that CNCF projects build on (gVisor, Kata, Firecracker)
+  orders/<order id>/     #   each buyer's delivered page, frozen
 studies/                 # Terac round state
 output/                  # landing copy, launch post, policy, Terac report
 memory.db                # SQLite episodic + operational memory (not committed)

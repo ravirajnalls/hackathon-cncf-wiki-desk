@@ -40,7 +40,7 @@ De Jong recommends starting with default per-namespace policies while using Hubb
 
 - **vs kube-proxy + iptables:** pick Cilium when rule-chain debugging and performance at scale hurt; Cilium can replace kube-proxy entirely [▶ 32:04](https://www.youtube.com/watch?v=99jUcLt3rSk&t=1924s).
 - **Multi-cloud / multi-cluster:** one consistent networking layer across clouds is the draw [▶ 00:00](https://www.youtube.com/watch?v=T_EDE6DDqYc&t=0s).
-- **For sandboxed AI agents:** Cilium does not isolate kernels. Containers still share a kernel, which is why [Agent Sandbox on CNCF](agent-sandbox-on-cncf.md) pairs runtimes such as [gVisor](gvisor-for-ai-agent-isolation.md) or [Kata Containers](kata-containers-for-ai-agents.md) with network controls. Cilium's identity-aware network policy is the natural layer for limiting what a sandbox may reach (egress allow-lists); this is an inference from the sources above, not something a cited talk states.
+- **For sandboxed AI agents:** Cilium does not isolate kernels. Containers still share a kernel, which is why [Agent Sandbox on CNCF](../../guides/agent-sandbox-on-cncf.md) pairs runtimes such as [gVisor](../../related-runtimes/gvisor-for-ai-agent-isolation.md) or [Kata Containers](../../related-runtimes/kata-containers-for-ai-agents.md) with network controls. Cilium's identity-aware network policy is the natural layer for limiting what a sandbox may reach (egress allow-lists); this is an inference from the sources above, not something a cited talk states.
 
 ## Real-world usage
 

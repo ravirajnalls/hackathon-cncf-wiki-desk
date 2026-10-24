@@ -34,7 +34,7 @@ STUDIES_DIR = PROJECT_ROOT / "studies"
 STYLE_GUIDE = PROJECT_ROOT / "agent" / "style_guide.md"
 REPORT_FILE = PROJECT_ROOT / "output" / "terac_report.md"
 
-DEFAULT_PAGE = "concepts/agent-sandbox-on-cncf.md"
+DEFAULT_PAGE = "guides/agent-sandbox-on-cncf.md"
 ITEMS_PER_ROUND = int(os.environ.get("TERAC_ITEMS", "4"))
 RESPONDENTS = int(os.environ.get("TERAC_COUNT", "15"))
 ROUND_BUDGET_USD = float(os.environ.get("TERAC_ROUND_BUDGET_USD", "40"))
@@ -65,8 +65,17 @@ def readable(text: str) -> str:
     return text[:MAX_ITEM_CHARS].rsplit(" ", 1)[0] + "…" if len(text) > MAX_ITEM_CHARS else text
 
 
+def resolve_page(page: str) -> str:
+    """Wiki-relative path of a page, following moves (round files saved before the
+    wiki was reorganized still say concepts/<name>.md)."""
+    if (WIKI_DIR / page).exists():
+        return page
+    matches = sorted(WIKI_DIR.rglob(Path(page).name))
+    return matches[0].relative_to(WIKI_DIR).as_posix() if matches else page
+
+
 def pick_items(page: str, n: int) -> list[dict]:
-    text = (WIKI_DIR / page).read_text(encoding="utf-8")
+    text = (WIKI_DIR / resolve_page(page)).read_text(encoding="utf-8")
     items = []
     for heading, body in split_sections(text):
         plain = readable(body)
@@ -77,7 +86,7 @@ def pick_items(page: str, n: int) -> list[dict]:
 
 
 def current_section_text(page: str, heading: str) -> str:
-    text = (WIKI_DIR / page).read_text(encoding="utf-8")
+    text = (WIKI_DIR / resolve_page(page)).read_text(encoding="utf-8")
     for h, body in split_sections(text):
         if h == heading:
             return readable(body)
@@ -195,7 +204,7 @@ Output ONLY a JSON object at the end:
 
 
 def apply_prompt(r1: dict) -> str:
-    feedback = [{"section": it["section"], "page": it["page"],
+    feedback = [{"section": it["section"], "page": resolve_page(it["page"]),
                  "original_score": it.get("scores", {}).get("original"),
                  "plain_variant_score": it.get("scores", {}).get("variant"),
                  "plain_variant_win_rate": it.get("variant_win_rate"),

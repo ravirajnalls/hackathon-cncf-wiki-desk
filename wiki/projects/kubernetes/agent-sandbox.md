@@ -12,7 +12,7 @@ clarity_score: 0.0
 
 # Kubernetes Agent Sandbox
 
-> The upstream Kubernetes project for giving each AI agent its own isolated, long-lived, single-pod environment. For the wider CNCF landscape see [Agent Sandbox on CNCF](agent-sandbox-on-cncf.md).
+> The upstream Kubernetes project for giving each AI agent its own isolated, long-lived, single-pod environment. For the wider CNCF landscape see [Agent Sandbox on CNCF](../../guides/agent-sandbox-on-cncf.md).
 
 ## What it is
 
@@ -50,7 +50,7 @@ Sghiouar prompts an agent to print its environment variables. With the sandbox, 
 
 - **Use it** when agents execute untrusted code, need a persistent identity or scratch disk, or sit idle for long periods. The blog says it supports scaling idle environments to zero and resuming where they left off [docs](https://kubernetes.io/blog/2026/03/20/running-agents-on-kubernetes-with-agent-sandbox/).
 - **Local dev tools** such as Gemini CLI or Codex have their own local sandboxing, not gVisor [▶ 12:35](https://www.youtube.com/watch?v=ZJH1kYFKjK8&t=755s).
-- **Higher density:** Lin Sun (Solo.io) argues sandboxing is necessary but not sufficient; [Agent Substrate](agent-sandbox-on-cncf.md) lets agents run in short bursts on shared workers and suspend when idle, rather than one always-on pod each [docs](https://www.cncf.io/blog/2026/07/07/why-sandboxing-your-agent-is-not-enough/).
+- **Higher density:** Lin Sun (Solo.io) argues sandboxing is necessary but not sufficient; [Agent Substrate](../../guides/agent-sandbox-on-cncf.md) lets agents run in short bursts on shared workers and suspend when idle, rather than one always-on pod each [docs](https://www.cncf.io/blog/2026/07/07/why-sandboxing-your-agent-is-not-enough/).
 - **Self-hosted VM stack:** Japan AI / Ant Group combined the agent-sandbox CRD (v0.5.3), Kata on EKS and an image service, and measured about 1.4 seconds for a warm start [▶ 26:58](https://www.youtube.com/watch?v=aFX_6HL_i80&t=1618s). See the hub page for the Kata-based architecture.
 
 ## Real-world usage

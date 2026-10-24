@@ -13,7 +13,7 @@ clarity_score: 0.0
 
 # Kata Containers for AI agents
 
-> Kata is the "real guest kernel" option in the agent-sandbox landscape. For the wider picture see [Agent Sandbox on CNCF](agent-sandbox-on-cncf.md); for the Kubernetes API that can launch Kata pods see [Kubernetes Agent Sandbox](kubernetes-agent-sandbox.md).
+> Kata is the "real guest kernel" option in the agent-sandbox landscape. For the wider picture see [Agent Sandbox on CNCF](../guides/agent-sandbox-on-cncf.md); for the Kubernetes API that can launch Kata pods see [Kubernetes Agent Sandbox](../projects/kubernetes/agent-sandbox.md).
 
 ## What it is
 
@@ -46,7 +46,7 @@ Guidance from the sources:
 
 - Choose Kata for zero-trust, multi-tenant agent code execution where a hardware-enforced boundary is the requirement [▶ 08:07](https://www.youtube.com/watch?v=aFX_6HL_i80&t=487s).
 - Sandboxes such as Firecracker, gVisor and Kata reduce the blast radius, but you still trust the host and infrastructure; if you do not, add confidential computing [▶ 02:10](https://www.youtube.com/watch?v=bdoF5hQojaA&t=130s).
-- Use warm pools to hide VM boot cost (see below). In Kubernetes, Kata is reached through [Kubernetes Agent Sandbox](kubernetes-agent-sandbox.md) templates and runtime classes.
+- Use warm pools to hide VM boot cost (see below). In Kubernetes, Kata is reached through [Kubernetes Agent Sandbox](../projects/kubernetes/agent-sandbox.md) templates and runtime classes.
 
 ## Real-world usage
 
@@ -60,6 +60,6 @@ Guidance from the sources:
 
 > ⚠ **How fast is Kata start-up?** The Kata 4.0 speaker claims about 20 ms template boot [▶ 07:56](https://www.youtube.com/watch?v=lruh-JgbTKM&t=476s), but the live demo showed VM restore of 6 ms and 20 ms with end-to-end launches of 221 ms (block device) and 160 ms (virtio-fs) [▶ 15:59](https://www.youtube.com/watch?v=lruh-JgbTKM&t=959s) [▶ 16:42](https://www.youtube.com/watch?v=lruh-JgbTKM&t=1002s). Meanwhile the Zun deployment sees 5 s cold create and Japan AI 1.4 s warm start, because they include scheduling, images and pod machinery. Compare like with like: VM restore, container launch and full pod creation are different measurements.
 >
-> **Is the VM cost acceptable?** Bao calls the per-sandbox VM cost small enough for ephemeral sandboxes [▶ 09:24](https://www.youtube.com/watch?v=Qcuzt2YkdMs&t=564s), while the earlier Japan AI talk concedes VMs cost more start-up time and memory that "should be solved by the technology" (see [Agent Sandbox on CNCF](agent-sandbox-on-cncf.md)).
+> **Is the VM cost acceptable?** Bao calls the per-sandbox VM cost small enough for ephemeral sandboxes [▶ 09:24](https://www.youtube.com/watch?v=Qcuzt2YkdMs&t=564s), while the earlier Japan AI talk concedes VMs cost more start-up time and memory that "should be solved by the technology" (see [Agent Sandbox on CNCF](../guides/agent-sandbox-on-cncf.md)).
 >
 > **Maturity caveats.** Kata 4.0 had been out only weeks at the time of the talks [▶ 13:13](https://www.youtube.com/watch?v=aFX_6HL_i80&t=793s), and Kubernetes checkpoint/restore for Kata was still under review [▶ 08:39](https://www.youtube.com/watch?v=lruh-JgbTKM&t=519s).

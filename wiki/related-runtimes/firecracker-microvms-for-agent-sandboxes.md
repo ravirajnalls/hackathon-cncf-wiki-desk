@@ -18,7 +18,7 @@ clarity_score: 0.0
 
 ## What it is
 
-When an AI agent runs code an LLM just wrote, that code is effectively untrusted. A regular container shares the host kernel, so one kernel bug can expose the whole node. The Lens explainer puts it bluntly: namespaces and cgroups are "a resource boundary, not a security boundary" [▶ 02:11](https://www.youtube.com/watch?v=bfmBJ-th2-4&t=131s). See [Agent Sandbox on CNCF](agent-sandbox-on-cncf.md) for the wider problem.
+When an AI agent runs code an LLM just wrote, that code is effectively untrusted. A regular container shares the host kernel, so one kernel bug can expose the whole node. The Lens explainer puts it bluntly: namespaces and cgroups are "a resource boundary, not a security boundary" [▶ 02:11](https://www.youtube.com/watch?v=bfmBJ-th2-4&t=131s). See [Agent Sandbox on CNCF](../guides/agent-sandbox-on-cncf.md) for the wider problem.
 
 A **microVM** is a real virtual machine with its own kernel, "stripped down to almost nothing", with no emulated legacy hardware [▶ 02:11](https://www.youtube.com/watch?v=bfmBJ-th2-4&t=131s). **Firecracker** is the best-known one. Pai describes Firecracker as the VMM that powers AWS Lambda [▶ 21:19](https://www.youtube.com/watch?v=y_vC8oxtbjY&t=1279s). AWS now also sells it directly to agent builders: Lambda MicroVMs, "powered by Firecracker virtualization", give each environment VM-level isolation and can launch from a memory and disk snapshot [docs](https://aws.amazon.com/blogs/compute/running-self-hosted-ai-agent-sandboxes-with-aws-lambda-microvms/).
 
@@ -34,7 +34,7 @@ A **microVM** is a real virtual machine with its own kernel, "stripped down to a
 Firecracker does not speak Kubernetes itself. Two common routes:
 
 1. **Via Kata Containers.** Pai notes Kata lets each pod run its own lightweight VM, and you choose the VMM: Firecracker, Cloud Hypervisor or QEMU [▶ 24:12](https://www.youtube.com/watch?v=y_vC8oxtbjY&t=1452s). Estes noted Kata added Firecracker support as a backend back in 2018 [▶ 23:57](https://www.youtube.com/watch?v=92MQcV0GSyk&t=1437s). More in [Kata Containers for AI agents](kata-containers-for-ai-agents.md).
-2. **Via Agent Sandbox.** Sghiouar says the Sandbox is "just a pod" in a sandboxing technology; gVisor is the default, but it can use Kata or microVMs such as Firecracker [▶ 03:47](https://www.youtube.com/watch?v=ZJH1kYFKjK8&t=227s). The upstream example runs a Sandbox on the `kata-fc` RuntimeClass with a SandboxTemplate and a SandboxWarmPool holding 2 warm microVMs [docs](https://agent-sandbox.sigs.k8s.io/docs/use-cases/examples/firecracker-sandbox/). See [Kubernetes Agent Sandbox](kubernetes-agent-sandbox.md).
+2. **Via Agent Sandbox.** Sghiouar says the Sandbox is "just a pod" in a sandboxing technology; gVisor is the default, but it can use Kata or microVMs such as Firecracker [▶ 03:47](https://www.youtube.com/watch?v=ZJH1kYFKjK8&t=227s). The upstream example runs a Sandbox on the `kata-fc` RuntimeClass with a SandboxTemplate and a SandboxWarmPool holding 2 warm microVMs [docs](https://agent-sandbox.sigs.k8s.io/docs/use-cases/examples/firecracker-sandbox/). See [Kubernetes Agent Sandbox](../projects/kubernetes/agent-sandbox.md).
 
 **Practical constraints** from the example docs [docs](https://agent-sandbox.sigs.k8s.io/docs/use-cases/examples/firecracker-sandbox/):
 
@@ -64,11 +64,11 @@ Pai's practical advice: assume exfiltration is always possible from the sandbox,
 
 ## Disagreements
 
-> ⚠ The sources disagree on how much VM-grade isolation is worth. The Lens explainer says microVMs win for agent execution "and it's not even close" [▶ 02:11](https://www.youtube.com/watch?v=bfmBJ-th2-4&t=131s). Sghiouar, speaking for Agent Sandbox, keeps gVisor as the default and treats Firecracker as one pluggable option [▶ 03:47](https://www.youtube.com/watch?v=ZJH1kYFKjK8&t=227s). Wang's team, by contrast, chose Kata with a full guest kernel and worked on boot cost ([Agent Sandbox on CNCF](agent-sandbox-on-cncf.md)). The Lens video is also a vendor pitch for its own product, so weigh it accordingly.
+> ⚠ The sources disagree on how much VM-grade isolation is worth. The Lens explainer says microVMs win for agent execution "and it's not even close" [▶ 02:11](https://www.youtube.com/watch?v=bfmBJ-th2-4&t=131s). Sghiouar, speaking for Agent Sandbox, keeps gVisor as the default and treats Firecracker as one pluggable option [▶ 03:47](https://www.youtube.com/watch?v=ZJH1kYFKjK8&t=227s). Wang's team, by contrast, chose Kata with a full guest kernel and worked on boot cost ([Agent Sandbox on CNCF](../guides/agent-sandbox-on-cncf.md)). The Lens video is also a vendor pitch for its own product, so weigh it accordingly.
 
 ## Related pages
 
-- [Agent Sandbox on CNCF](agent-sandbox-on-cncf.md)
-- [Kubernetes Agent Sandbox](kubernetes-agent-sandbox.md)
+- [Agent Sandbox on CNCF](../guides/agent-sandbox-on-cncf.md)
+- [Kubernetes Agent Sandbox](../projects/kubernetes/agent-sandbox.md)
 - [Kata Containers for AI agents](kata-containers-for-ai-agents.md)
 - [gVisor for AI agent isolation](gvisor-for-ai-agent-isolation.md)

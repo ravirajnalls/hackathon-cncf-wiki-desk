@@ -86,10 +86,10 @@ Cloud-native agent harness built as a distributed system. Separates the agent lo
 
 ## Related pages
 
-- [Kubernetes Agent Sandbox](kubernetes-agent-sandbox.md) — the SIG Apps Sandbox CRD, templates, claims and warm pools.
-- [gVisor for AI agent isolation](gvisor-for-ai-agent-isolation.md) — the user-space kernel behind Agent Sandbox: how it works and when to choose it.
-- [Kata Containers for AI agents](kata-containers-for-ai-agents.md) — VM-per-sandbox isolation, Kata 4.0 features, and when to choose it over gVisor.
-- [Firecracker microVMs for agent sandboxes](firecracker-microvms-for-agent-sandboxes.md) — Firecracker's minimal VMM for per-sandbox kernels, via Kata or Agent Sandbox, and when to choose it.
-- [kagent: AI agents on Kubernetes](kagent-ai-agents-on-kubernetes.md) — declarative agents, MCP tools and GitOps operation, and how it pairs with sandbox runtimes.
+- [Kubernetes Agent Sandbox](../projects/kubernetes/agent-sandbox.md) — the SIG Apps Sandbox CRD, templates, claims and warm pools.
+- [gVisor for AI agent isolation](../related-runtimes/gvisor-for-ai-agent-isolation.md) — the user-space kernel behind Agent Sandbox: how it works and when to choose it.
+- [Kata Containers for AI agents](../related-runtimes/kata-containers-for-ai-agents.md) — VM-per-sandbox isolation, Kata 4.0 features, and when to choose it over gVisor.
+- [Firecracker microVMs for agent sandboxes](../related-runtimes/firecracker-microvms-for-agent-sandboxes.md) — Firecracker's minimal VMM for per-sandbox kernels, via Kata or Agent Sandbox, and when to choose it.
+- [kagent: AI agents on Kubernetes](../projects/kagent/index.md) — declarative agents, MCP tools and GitOps operation, and how it pairs with sandbox runtimes.
 - [Securing MCP tool calls in agent sandboxes](securing-mcp-tool-calls-in-agent-sandboxes.md) — gateway auth, default-deny tool allow lists, policy engines and sandboxed MCP servers.
-- [Cilium](cilium.md) — eBPF networking, identity-based network policy and egress control for the pods that host agent sandboxes.
+- [Cilium](../projects/cilium/index.md) — eBPF networking, identity-based network policy and egress control for the pods that host agent sandboxes.

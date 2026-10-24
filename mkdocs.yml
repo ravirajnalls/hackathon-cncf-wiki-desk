@@ -8,10 +8,28 @@ theme:
   name: material
   features:
     - navigation.instant
+    - navigation.tabs
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
     - search.suggest
     - search.highlight
+# A personal Obsidian vault folder, not part of the site
+exclude_docs: |
+  Research/
 plugins:
   - search
+  # Pages moved from the flat concepts/ folder into project folders; keep old links working
+  - redirects:
+      redirect_maps:
+        concepts/agent-sandbox-on-cncf.md: guides/agent-sandbox-on-cncf.md
+        concepts/securing-mcp-tool-calls-in-agent-sandboxes.md: guides/securing-mcp-tool-calls-in-agent-sandboxes.md
+        concepts/kubernetes-agent-sandbox.md: projects/kubernetes/agent-sandbox.md
+        concepts/kagent-ai-agents-on-kubernetes.md: projects/kagent/index.md
+        concepts/cilium.md: projects/cilium/index.md
+        concepts/gvisor-for-ai-agent-isolation.md: related-runtimes/gvisor-for-ai-agent-isolation.md
+        concepts/kata-containers-for-ai-agents.md: related-runtimes/kata-containers-for-ai-agents.md
+        concepts/firecracker-microvms-for-agent-sandboxes.md: related-runtimes/firecracker-microvms-for-agent-sandboxes.md
 markdown_extensions:
   - tables
   - toc:
