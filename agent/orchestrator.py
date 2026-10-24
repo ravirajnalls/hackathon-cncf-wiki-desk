@@ -28,6 +28,8 @@ from agent.db import record_order, mark_delivered, log_decision, get_order, set_
 from agent.tools.poll_orders import poll_orders as whop_poll
 from agent.claude_runner import run_claude
 from agent.tools.run_terac_study import style_guide_text
+from agent.tools.compile_pages import _slugify
+from agent.tools.publish_wiki import get_page_url
 
 
 def build_fulfillment_prompt(order: dict) -> str:
@@ -36,6 +38,8 @@ def build_fulfillment_prompt(order: dict) -> str:
     topic = order.get("metadata", {}).get("topic", "")
     created_at = order.get("created_at", "")
     product_id = os.environ.get("WHOP_PRODUCT_ID", "prod_65oqcxlhZM93U")
+    slug = _slugify(topic) if topic else ""
+    page_url = get_page_url(slug) if topic else ""
 
     if not topic:
         return f"""You are fulfilling a CNCF Wiki Desk order via MCP tools.
@@ -60,12 +64,11 @@ Working directory: {PROJECT_ROOT}
 === YOUR TOOLS ===
 You have access to:
 - Whop MCP: whop_get_orders, whop_send_message, whop_update_product, etc.
-- Terac MCP: terac.create_study, terac.list_responses, terac.get_results (if available)
 - Exa: search for KubeCon/CNCF talks (via exa_py or Exa MCP)
 - File tools: read, write, edit files in {PROJECT_ROOT}
 - Shell: run commands (python, git, pip)
 
-=== 7 STEPS — DO ALL OF THEM ===
+=== 6 STEPS — DO ALL OF THEM, IN ORDER ===
 
 STEP 1 — DISCOVER SOURCES
 Find 8-10 KubeCon/CNCF talks and official docs on "{topic}".
@@ -80,7 +83,8 @@ This stores timestamped chunks in memory.db automatically. Skip videos that fail
 STEP 3 — COMPILE WIKI PAGE
 Run this shell command to generate the wiki page:
   python -c "from agent.tools.compile_pages import compile_pages, write_page; import json; ..."
-Or write the page directly to wiki/concepts/{topic.lower().replace(' ','-')}.md using the file tools.
+Or write the page directly to wiki/concepts/{slug}.md using the file tools.
+Then add or update its line in wiki/index.md: "- [Title](concepts/{slug}.md) — one-line summary".
 
 The page MUST have:
 - YAML frontmatter: title, summary, sources, updated, clarity_score
@@ -88,28 +92,26 @@ The page MUST have:
 - Disagreements section if multiple speakers conflict
 {style_guide_text()}
 
-STEP 4 — PUBLISH
-Run: python -c "from agent.tools.publish_wiki import publish_wiki; print(publish_wiki())"
-Or simply confirm the markdown file is written — the page is the deliverable.
-
-STEP 5 — DELIVER TO BUYER
-Use Whop MCP to send the buyer a message with the wiki link.
-Message format:
-  "✅ Your CNCF Wiki on '{topic}' is ready!
-
-   📖 View it: [URL or file path]
-
-   Every claim is cited with a clickable video timestamp."
-
-STEP 6 — LOG DECISION
-Log your key decisions:
-  python -c "from agent.db import log_decision; log_decision('...', '...', '...', '...')"
-
-STEP 7 — GIT COMMIT
+STEP 4 — PUBLISH (commit + push; the hosted site rebuilds from GitHub)
 Run:
   cd {PROJECT_ROOT}
-  git add .
+  python -c "from agent.tools.publish_wiki import publish_wiki; print(publish_wiki())"
+  git add wiki
   git commit -m "wiki: {topic} (order {whop_id[:8]})"
+  git push
+If mkdocs reports errors in the new page, fix them before pushing.
+
+STEP 5 — LOG DECISION
+Log your key decisions (sources chosen, what you reused from existing pages):
+  python -c "from agent.db import log_decision; log_decision('...', '...', '...', '...')"
+
+STEP 6 — DELIVER TO BUYER
+Use Whop MCP to send the buyer this message:
+  "✅ Your CNCF Wiki on '{topic}' is ready!
+
+   📖 View it: {page_url}
+
+   Every claim is cited with a clickable video timestamp. The page may take a minute to go live."
 
 === REPORT BACK ===
 When done, output a JSON summary:
@@ -144,8 +146,7 @@ def fulfill_order(order: dict) -> dict:
         # Subprocess only asked the buyer for a topic; retry once one arrives
         set_order_status(whop_id, "awaiting_topic")
     elif result.get("status") == "fulfilled":
-        page_url = f"wiki/concepts/{topic.lower().replace(' ', '-')}.md" if topic else ""
-        mark_delivered(whop_id, page_url, cost_usd=3.0)
+        mark_delivered(whop_id, get_page_url(_slugify(topic)), cost_usd=3.0)
         log_decision(
             f"Order {whop_id[:8]} fulfilled",
             f"Topic: {topic}",

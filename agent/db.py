@@ -4,6 +4,7 @@ import sqlite3
 from pathlib import Path
 
 DB_PATH = Path(__file__).parent.parent / "memory.db"
+LOG_FILE = Path(__file__).parent.parent / "wiki" / "log.md"
 
 
 def get_db() -> sqlite3.Connection:
@@ -64,6 +65,28 @@ def log_decision(decision: str, reason: str, expected: str, outcome: str = ""):
             "INSERT INTO decisions (decision, reason, expected, outcome) VALUES (?, ?, ?, ?)",
             (decision, reason, expected, outcome),
         )
+    export_decision_log()
+
+
+def export_decision_log(limit: int = 200):
+    """Mirror the decisions table into wiki/log.md so it's visible in git and on the site."""
+    def cell(value) -> str:
+        return str(value or "").replace("|", "/").replace("\n", " ")[:160]
+
+    with get_db() as conn:
+        rows = conn.execute(
+            "SELECT time, decision, reason, expected, outcome FROM decisions ORDER BY id DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+    lines = [
+        "# Decision Log", "",
+        "Every choice the agent makes, with its reason, what it expected and what happened. Newest first.", "",
+        "| Time (UTC) | Decision | Reason | Expected | Outcome |",
+        "|------|----------|--------|----------|---------|",
+    ]
+    lines += [f"| {cell(r['time'])} | {cell(r['decision'])} | {cell(r['reason'])} | "
+              f"{cell(r['expected'])} | {cell(r['outcome'])} |" for r in rows]
+    LOG_FILE.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def record_order(whop_id: str, topic: str, paid_at: str):

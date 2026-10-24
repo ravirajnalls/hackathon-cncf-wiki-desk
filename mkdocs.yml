@@ -1,0 +1,16 @@
+site_name: CNCF Wiki Desk
+site_description: Agent-compiled, cited wikis on cloud-native topics. Every claim links to a KubeCon talk timestamp.
+docs_dir: wiki
+site_dir: site
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - search.suggest
+    - search.highlight
+plugins:
+  - search
+markdown_extensions:
+  - tables
+  - toc:
+      permalink: true
