@@ -7,7 +7,7 @@ exact moment in the talk. Every order makes the next one faster and better.
 Built solo for Terac's Zero Human Company Hackathon NYC (Oct 24, 2026).
 
 - **Buy:** https://whop.com/github-9154/cloud-native-wiki-on-demand
-- **Live wiki:** https://cncf-wiki-desk.netlify.app (update after the Netlify deploy)
+- **Live wiki:** https://ravirajnalls.github.io/hackathon-cncf-wiki-desk/
 - **Terac before/after:** [`output/terac_report.md`](output/terac_report.md)
 - **Agent decision log:** [`wiki/log.md`](wiki/log.md)
 
@@ -18,7 +18,7 @@ Built solo for Terac's Zero Human Company Hackathon NYC (Oct 24, 2026).
 | Sell | Whop checkout; the orchestrator polls paid orders and asks for a topic if missing |
 | Research | Exa finds 8–10 KubeCon/CNCF talks; captions are pulled with timestamps into SQLite FTS5 |
 | Build | Claude compiles a wiki page: YAML frontmatter, a `[▶ MM:SS]` citation on every claim, a Disagreements section when talks conflict |
-| Publish & deliver | Commits and pushes the wiki (Netlify rebuilds the MkDocs site), then messages the buyer the link on Whop |
+| Publish & deliver | Commits and pushes the wiki (GitHub Pages rebuilds the MkDocs site), then messages the buyer the link on Whop |
 | Improve with humans | Terac general-population panels rate clarity; the agent rewrites the wiki and learns writing rules from their feedback |
 | Marketing & legal | Writes landing copy, the launch post, terms, refund policy and CNCF source attribution (`output/`) |
 | Decide | Every choice is logged with reason, expectation and outcome, mirrored to `wiki/log.md` |
@@ -68,9 +68,9 @@ mkdocs serve                         # preview the wiki site locally
 python -m agent.tools.verify_citations   # check every timestamp citation
 ```
 
-**Deploy the wiki:** connect this repo to Netlify (settings come from `netlify.toml`), then
-set `WIKI_BASE_URL` in `.env` to the site address. The agent pushes after each order, so
-each new page goes live a minute later.
+**Deploy the wiki:** GitHub Pages builds the MkDocs site on every push to `main`
+(`.github/workflows/pages.yml`). The agent pushes after each order, so each new page goes
+live a minute later.
 
 ## Architecture
 
@@ -84,7 +84,7 @@ Whop order ──> orchestrator.py (poll, dedupe, state in SQLite)
                          ├─ Exa: find talks          ─> find_sources.py
                          ├─ captions -> SQLite FTS5  ─> get_transcript.py
                          ├─ compile wiki page        ─> wiki/concepts/*.md (+ style_guide.md)
-                         ├─ mkdocs build, git push   ─> publish_wiki.py ─> Netlify
+                         ├─ mkdocs build, git push   ─> publish_wiki.py ─> GitHub Pages
                          ├─ log decisions            ─> memory.db + wiki/log.md
                          └─ Whop: message buyer the link
 Terac panels <── run_terac_study.py (launch / collect / apply / report)

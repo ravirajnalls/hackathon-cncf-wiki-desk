@@ -1,7 +1,7 @@
 """Build the static wiki site and return the delivery URL.
 
 mkdocs.yml lives at the project root (docs_dir: wiki, site_dir: site). The
-hosted copy (Netlify, see netlify.toml) rebuilds from GitHub on every push;
+hosted copy (GitHub Pages, see .github/workflows/pages.yml) rebuilds from GitHub on every push;
 the local build here just checks the new page renders.
 """
 
@@ -13,8 +13,8 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent
 WIKI_DIR = PROJECT_ROOT / "wiki"
 SITE_DIR = PROJECT_ROOT / "site"
 
-# Set WIKI_BASE_URL in .env to the deployed site, e.g. https://cncf-wiki-desk.netlify.app
-DEFAULT_BASE_URL = "https://cncf-wiki-desk.netlify.app"
+# Override with WIKI_BASE_URL in .env if the site moves
+DEFAULT_BASE_URL = "https://ravirajnalls.github.io/hackathon-cncf-wiki-desk"
 
 
 def publish_wiki() -> dict:
