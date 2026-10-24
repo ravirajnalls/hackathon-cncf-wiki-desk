@@ -153,15 +153,20 @@ Output ONLY a JSON object: {{"variants": [{{"i": 1, "text": "..."}}, ...]}}"""
 
 def launch_prompt(task_text: str, count: int, budget: float) -> str:
     return f"""You are launching a human study on Terac for CNCF Wiki Desk using the Terac MCP tools.
+Check the actual Terac tool list and input schemas first; they are authoritative if names differ.
 
 1. Call terac_request_feasibility with:
    role: {json.dumps(ROLE)}
    count: {count}
    task: the exact text between the markers below (do not edit it)
-2. Poll terac_get_feasibility_request (or terac_list_opportunities / terac_get_context if that tool
-   is missing) until status is PRICED and cpi_usd is set. Wait between polls; give up after ~10 minutes.
-3. Budget check: total = cpi_usd x {count}. If total > {budget:.2f} USD, DO NOT launch.
-4. Otherwise call terac_launch_draft_opportunity with the request_id.
+   Target the general population (fastest turnaround); no expert screening needed.
+2. Poll terac_get_feasibility_request until status is PRICED and a price is set. The price may
+   appear as cpi_usd, costPerParticipant (dollars), or pricing.cost_per_participant_cents /
+   total_cost_cents on the draft opportunity. Wait between polls; give up after ~10 minutes.
+3. Budget check: total = price per participant x {count}. If total > {budget:.2f} USD, DO NOT launch.
+   Also note timelineHours if given: results are needed within a few hours.
+4. Otherwise call terac_launch_draft_opportunity with the request_id (create the draft
+   opportunity first if the tools require that step).
 
 <<<TASK
 {task_text}
@@ -169,7 +174,7 @@ TASK>>>
 
 Output ONLY a JSON object at the end:
 {{"status": "launched" | "over_budget" | "failed", "request_id": "...", "opportunity_id": "...",
-  "cpi_usd": 0.0, "total_usd": 0.0, "reason": "..."}}"""
+  "cpi_usd": 0.0, "total_usd": 0.0, "timeline_hours": null, "dashboard_url": "...", "reason": "..."}}"""
 
 
 def collect_prompt(state: dict) -> str:
@@ -286,7 +291,8 @@ def cmd_launch(round_no: int, count: int, dry_run: bool):
         return
 
     result = run_claude(launch_prompt(task_text, count, ROUND_BUDGET_USD), timeout=900)
-    state.update({k: result.get(k) for k in ("request_id", "opportunity_id", "cpi_usd", "total_usd", "reason")})
+    state.update({k: result.get(k) for k in ("request_id", "opportunity_id", "cpi_usd", "total_usd",
+                                             "timeline_hours", "dashboard_url", "reason")})
     state["status"] = result.get("status", "failed")
     save_state(round_no, state)
     log_decision(
