@@ -5,6 +5,7 @@ Grows the wiki around a hub page so orders on nearby topics reuse existing memor
   python -m agent.seed_wiki                      # default Agent Sandbox cluster
   python -m agent.seed_wiki "Cilium for AI agents" "Argo Workflows for agents"
   python -m agent.seed_wiki --list               # show the default topics
+  python -m agent.seed_wiki --usage "Cilium"     # only research + rewrite the Real-world usage section
 """
 
 import argparse
@@ -17,7 +18,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from agent.claude_runner import run_claude
 from agent.db import log_decision
 from agent.tools.compile_pages import _slugify
-from agent.tools.publish_wiki import get_page_url, index_instructions, topic_page_path
+from agent.tools.publish_wiki import get_page_url, index_instructions, topic_page_path, usage_instructions
 from agent.tools.cncf_projects import match_projects
 from agent.tools.run_terac_study import style_guide_text
 
@@ -66,8 +67,8 @@ CNCF project(s): {projects}
    - YAML frontmatter: title, summary (one line), sources (video id, t, speaker, year),
      links (slugs of related pages), updated, clarity_score: 0.0
    - Sections: what it is (plain language first), how it works, when to use it vs alternatives,
-     real-world usage, Disagreements (if sources conflict).
-   - Every claim from a talk ends with [▶ MM:SS](https://www.youtube.com/watch?v=VID&t=SECONDSs),
+     Real-world usage, Disagreements (if sources conflict).
+{usage_instructions(topic)}   - Every claim from a talk ends with [▶ MM:SS](https://www.youtube.com/watch?v=VID&t=SECONDSs),
      where MM:SS is exactly SECONDS and the quote really appears in the transcript chunk at that time.
      Claims from docs end with [docs](URL). Never invent a timestamp or a number.
    - Link related wiki pages with relative links (see step 5).
@@ -89,10 +90,39 @@ Output ONLY a JSON object at the end:
 {{"status": "published" | "failed", "slug": "{slug}", "path": "{path}", "sources_used": N, "talks_cited": N, "reason": "..."}}"""
 
 
+def usage_prompt(topic: str, projects: str) -> str:
+    """Backfill just the Real-world usage section of an existing page."""
+    path = topic_page_path(topic)
+    return f"""You are the research agent for CNCF Wiki Desk. Working directory: {PROJECT_ROOT}
+
+TOPIC: {topic}
+CNCF project(s): {projects}
+PAGE: wiki/{path}.md
+
+Rewrite ONLY the "## Real-world usage" section of this page (add it before "## Disagreements" if
+missing). Leave every other section unchanged.
+{usage_instructions(topic)}
+   - To ingest a talk: python -c "from agent.tools.get_transcript import get_transcript; print(get_transcript('URL'))"
+     then find the moment: python -c "from agent.db import search_chunks; [print(dict(r)) for r in search_chunks('KEYWORDS', 10)]"
+   - Add any new talks to the frontmatter sources list.
+{style_guide_text()}
+Then run:
+     python -m agent.tools.verify_citations
+     mkdocs build --strict
+Fix anything they report, then:
+     git add wiki
+     git commit -m "wiki: real-world usage for {topic}"
+     git push
+
+Output ONLY a JSON object at the end:
+{{"status": "published" | "failed", "path": "{path}", "use_cases": N, "sources_used": N, "reason": "..."}}"""
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("topics", nargs="*", help="topics to research (default: Agent Sandbox cluster)")
     parser.add_argument("--list", action="store_true", help="print the default topics and exit")
+    parser.add_argument("--usage", action="store_true", help="only research and rewrite the Real-world usage section")
     args = parser.parse_args()
 
     topics = args.topics or AGENT_SANDBOX_TOPICS
@@ -106,7 +136,8 @@ def main():
             print(f"[{i}/{len(topics)}] Skipping '{topic}': not a CNCF project", flush=True)
             continue
         print(f"[{i}/{len(topics)}] Researching: {topic} ({projects})", flush=True)
-        result = run_claude(seed_prompt(topic, projects), timeout=900)
+        prompt = usage_prompt(topic, projects) if args.usage else seed_prompt(topic, projects)
+        result = run_claude(prompt, timeout=600 if args.usage else 900)
         status = result.get("status")
         path = topic_page_path(topic)
         print(f"    -> {status}: {get_page_url(path) if status == 'published' else result.get('reason') or result.get('stderr') or result.get('stdout', '')[-300:]}", flush=True)

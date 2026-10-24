@@ -29,7 +29,7 @@ from agent.tools.poll_orders import poll_orders as whop_poll, get_checkout_answe
 from agent.claude_runner import run_claude
 from agent.tools.run_terac_study import style_guide_text
 from agent.tools.compile_pages import _slugify
-from agent.tools.publish_wiki import get_order_page_url, get_order_source_url, order_page_path
+from agent.tools.publish_wiki import get_order_page_url, get_order_source_url, order_page_path, usage_instructions
 from agent.tools.cncf_projects import CHECKOUT_OPTIONS, match_projects
 
 
@@ -151,7 +151,7 @@ The page MUST have:
 - YAML frontmatter: title, summary, sources, updated, clarity_score
 - Every claim ends with a clickable timestamp link: [▶ MM:SS](https://youtube.com/watch?v=VID&t=SECONDSs)
 - Disagreements section if multiple speakers conflict
-{style_guide_text()}
+{usage_instructions(topic)}{style_guide_text()}
 
 STEP 4 — PUBLISH (commit + push; the hosted site rebuilds from GitHub)
 Run:

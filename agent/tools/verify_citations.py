@@ -1,10 +1,12 @@
 """Check every [▶ MM:SS](...&t=Ns) citation in the wiki.
 
-Two checks:
+Checks:
   1. The label (MM:SS) matches the link's t= seconds.
   2. With transcripts ingested in memory.db, a quoted sentence next to the
      citation actually appears in the transcript near that time. If it appears
      elsewhere, the correct timestamp is suggested.
+  3. Warning only: researched project and order pages have a "## Real-world usage"
+     section citing at least 3 different sources.
 
   python -m agent.tools.verify_citations          # report
   python -m agent.tools.verify_citations --fix    # rewrite labels/links to the suggested time
@@ -46,6 +48,31 @@ def find_quote_time(video_id: str, quote: str) -> int | None:
     return None
 
 
+USAGE_HEADING = re.compile(r"^## Real-world usage\s*$(.*?)(?=^## |\Z)", re.M | re.S)
+LINK_URL = re.compile(r"\]\((https?://[^)\s]+)\)")
+MIN_USAGE_SOURCES = 3
+
+
+def usage_warning(path: Path) -> str | None:
+    """Warn when a researched project or order page has a thin usage section."""
+    if path.relative_to(WIKI_DIR).parts[0] not in ("projects", "orders"):
+        return None
+    text = path.read_text(encoding="utf-8")
+    if not text.startswith("---") or "\nsources:" not in text.split("\n---", 1)[0]:
+        return None
+    m = USAGE_HEADING.search(text)
+    if not m:
+        return f"WARN {path.relative_to(WIKI_DIR)}: no '## Real-world usage' section"
+    sources = set()
+    for url in LINK_URL.findall(m.group(1)):
+        vid = re.search(r"[?&]v=([\w-]+)", url)
+        sources.add(vid.group(1) if vid else url.split("#")[0].rstrip("/"))
+    if len(sources) < MIN_USAGE_SOURCES:
+        return (f"WARN {path.relative_to(WIKI_DIR)}: Real-world usage cites {len(sources)} source(s), "
+                f"want {MIN_USAGE_SOURCES}+")
+    return None
+
+
 def check_page(path: Path, fix: bool) -> list[str]:
     text = path.read_text(encoding="utf-8")
     problems = []
@@ -78,10 +105,16 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--fix", action="store_true", help="move citations to where the quote was found")
     args = parser.parse_args()
-    problems = []
+    problems, warnings = [], []
     for page in sorted(WIKI_DIR.rglob("*.md")):
+        if "Research" in page.parts:
+            continue
         problems += check_page(page, args.fix)
+        if (w := usage_warning(page)):
+            warnings.append(w)
     print("\n".join(problems) if problems else "All citations check out.")
+    if warnings:
+        print("\n".join(warnings))
     sys.exit(1 if problems and not args.fix else 0)
 
 

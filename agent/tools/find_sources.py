@@ -2,6 +2,7 @@
 CloudNativeCon) and docs from cncf.io, kubernetes.io and the matched projects' own sites.
 
   python -m agent.tools.find_sources "Cilium network policy"
+  python -m agent.tools.find_sources --use-cases "Cilium"     # who runs it in production
 """
 
 import json
@@ -84,5 +85,45 @@ def find_sources(topic: str, max_results: int = 8) -> list[dict]:
         s["project"] = names
     return found
 
+def find_use_cases(topic: str, max_results: int = 10) -> list[dict]:
+    """Find named organizations using the project, from three kinds of CNCF source:
+    end-user KubeCon talks, CNCF case studies / end-user blog posts, and the project's
+    own adopters list. Returns the same shape as find_sources, type "talk" | "case_study" | "adopters".
+    """
+    projects = match_projects(topic)
+    if not projects:
+        raise ValueError(f"'{topic}' does not match a CNCF project")
+    names = ", ".join(p["name"] for p in projects)
+    client = _client()
+
+    talks = client.search_and_contents(
+        query=f"KubeCon end user talk: how our company runs {names} in production, lessons learned",
+        num_results=max_results,
+        include_domains=["youtube.com"],
+        text={"max_characters": 500},
+    )
+    cases = client.search_and_contents(
+        query=f"{names} case study: company adopts {names} in production, results",
+        num_results=max_results,
+        include_domains=["cncf.io"] + [d for d in source_domains(projects) if d not in ("github.com", "kubernetes.io")],
+        text={"max_characters": 500},
+    )
+    found = [_source(r, "talk") for r in talks.results if _is_cncf_talk(r)]
+    found += [_source(r, "case_study") for r in cases.results]
+    # Most CNCF projects keep a list of production users in their repo
+    for p in projects:
+        if p.get("repo", "").startswith("https://github.com/"):
+            for name in ("ADOPTERS.md", "USERS.md"):
+                found.append({"url": f"{p['repo'].rstrip('/')}/blob/main/{name}", "title": f"{p['name']} {name}",
+                              "author": p["name"], "published": "", "text": "", "type": "adopters"})
+    for s in found:
+        s["project"] = names
+    return found
+
+
 if __name__ == "__main__":
-    print(json.dumps(find_sources(" ".join(sys.argv[1:]), 10), indent=1))
+    args = sys.argv[1:]
+    if args and args[0] == "--use-cases":
+        print(json.dumps(find_use_cases(" ".join(args[1:])), indent=1))
+    else:
+        print(json.dumps(find_sources(" ".join(args), 10), indent=1))

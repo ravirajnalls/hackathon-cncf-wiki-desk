@@ -72,6 +72,21 @@ def topic_page_path(topic: str) -> str:
     return f"projects/{project}/{sub}"
 
 
+def usage_instructions(topic: str) -> str:
+    """The required Real-world usage section, shared by the order and seed prompts."""
+    return f"""   - A "## Real-world usage" section is REQUIRED. Find use cases with
+       python -m agent.tools.find_sources --use-cases "{topic}"
+     (end-user KubeCon talks, CNCF case studies, and the project's ADOPTERS.md / USERS.md, which you
+     can read with WebFetch; a 404 just means the project keeps no such file).
+     Write 3-6 bullets, one per organization or use case:
+       - **Organization**: what they use it for, at what scale, and what changed, with a citation.
+     Cite at least 3 different sources, from at least 2 kinds (talk, case study, adopters list).
+     Ingest end-user talks like any other talk so their claims get [▶ MM:SS] citations.
+     Only name organizations a source names. A vendor describing its own product is not a use case.
+     If you can't find 3 sourced use cases, say so in one line instead of padding.
+"""
+
+
 def index_instructions(path: str, project: str = "") -> str:
     """How the agent files a new page into wiki/index.md and its folder's index (shared by prompts)."""
     folder, _, name = path.rpartition("/")
