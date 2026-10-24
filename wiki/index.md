@@ -11,6 +11,7 @@
 - [Firecracker microVMs for agent sandboxes](concepts/firecracker-microvms-for-agent-sandboxes.md) — How Firecracker's minimal Rust VMM gives each AI agent sandbox its own kernel at near-container speed, how it plugs into Kata and Agent Sandbox, and when to pick it over gVisor or plain containers.
 - [kagent: AI agents on Kubernetes](concepts/kagent-ai-agents-on-kubernetes.md) — How the CNCF Sandbox project kagent turns an AI agent (system prompt, model, tools) into a declarative Kubernetes resource, and when to use it versus hand-rolled agents or sandbox runtimes.
 - [Securing MCP tool calls in agent sandboxes](concepts/securing-mcp-tool-calls-in-agent-sandboxes.md) — How to control what an AI agent may do through MCP, by combining sandboxed tool servers, gateway-level authentication, and default-deny per-tool authorization.
+- [Cilium](concepts/cilium.md) — How the graduated CNCF project Cilium uses eBPF for Kubernetes networking, identity-based network policy, multi-cluster connectivity and observability, and when to choose it over kube-proxy/iptables setups.
 
 ## About
 

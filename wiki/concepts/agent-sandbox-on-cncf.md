@@ -92,3 +92,4 @@ Cloud-native agent harness built as a distributed system. Separates the agent lo
 - [Firecracker microVMs for agent sandboxes](firecracker-microvms-for-agent-sandboxes.md) — Firecracker's minimal VMM for per-sandbox kernels, via Kata or Agent Sandbox, and when to choose it.
 - [kagent: AI agents on Kubernetes](kagent-ai-agents-on-kubernetes.md) — declarative agents, MCP tools and GitOps operation, and how it pairs with sandbox runtimes.
 - [Securing MCP tool calls in agent sandboxes](securing-mcp-tool-calls-in-agent-sandboxes.md) — gateway auth, default-deny tool allow lists, policy engines and sandboxed MCP servers.
+- [Cilium](cilium.md) — eBPF networking, identity-based network policy and egress control for the pods that host agent sandboxes.
