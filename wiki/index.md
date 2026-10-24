@@ -6,6 +6,7 @@
 
 - [Agent Sandbox on CNCF](concepts/agent-sandbox-on-cncf.md) — How CNCF projects provide secure, isolated runtime environments for AI agents at scale.
 - [Kubernetes Agent Sandbox (kubernetes-sigs/agent-sandbox)](concepts/kubernetes-agent-sandbox.md) — The SIG Apps project that adds a Sandbox CRD, templates, claims and warm pools to Kubernetes for running isolated, stateful AI agent workloads.
+- [gVisor for AI agent isolation](concepts/gvisor-for-ai-agent-isolation.md) — How gVisor's user-space application kernel sandboxes untrusted, LLM-generated code, and when to pick it over Kata Containers or plain containers.
 
 ## About
 
