@@ -20,10 +20,10 @@ An agent sandbox is an isolated runtime environment where AI agents execute code
 
 ## The two defining ideas
 
-Xu Wang and Yu Hu (Ant Group / Japan AI) presented the foundational thinking at KubeCon [▶ 58:50](https://www.youtube.com/watch?v=aFX_6HL_i80&t=3500s):
+Xu Wang and Yu Hu (Ant Group / Japan AI) presented the foundational thinking at KubeCon [▶ 05:50](https://www.youtube.com/watch?v=aFX_6HL_i80&t=350s):
 
-1. **Lifecycle** — A sandbox has a clear lifecycle: creation, execution, disposal. Once disposed, no data persists. [▶ 58:50](https://www.youtube.com/watch?v=aFX_6HL_i80&t=3500s)
-2. **Strong isolation** — Needs a separate kernel. "Namespace and cgroup isolation does not satisfy our requirements. The container uses the same kernel." [▶ 61:34](https://www.youtube.com/watch?v=aFX_6HL_i80&t=2364s)
+1. **Lifecycle** — A sandbox has a full lifecycle: create, configure, execute, observe, reset and destroy. A sandbox is not just a pod; the pod is one object in that lifecycle. [▶ 05:50](https://www.youtube.com/watch?v=aFX_6HL_i80&t=350s)
+2. **Strong isolation** — Needs a separate kernel. "Name space and the C group isolated. It does not satisfy our requirements. Because the container use the same kernel." [▶ 07:18](https://www.youtube.com/watch?v=aFX_6HL_i80&t=438s)
 
 ## Why containers aren't enough
 
@@ -83,3 +83,7 @@ Cloud-native agent harness built as a distributed system. Separates the agent lo
 ## Disagreements
 
 > ⚠ Two schools of thought exist on isolation strength. Xu Wang advocates VM-based isolation ("containers use the same kernel") while Rahul Jadhav advocates kernel-level enforcement via LSM-BPF (lighter weight, no VM overhead). The right choice depends on your trust model: VMs for zero-trust multi-tenant, LSM-BPF for trusted-tenant performance.
+
+## Related pages
+
+- [Kubernetes Agent Sandbox](kubernetes-agent-sandbox.md) — the SIG Apps Sandbox CRD, templates, claims and warm pools.
