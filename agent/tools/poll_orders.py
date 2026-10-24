@@ -6,7 +6,9 @@ import requests
 WHOP_API_KEY = os.environ.get("WHOP_API_KEY", "")
 WHOP_BUSINESS_ID = os.environ.get("WHOP_BUSINESS_ID", "")
 WHOP_MODE = os.environ.get("WHOP_MODE", "sandbox")
-WHOP_BASE = "https://api.whop.com/v1"
+# Whop API v1 (docs.whop.com/api-reference/payments/list-payments)
+WHOP_BASE = ("https://sandbox-api.whop.com/api/v1" if WHOP_MODE == "sandbox"
+             else "https://api.whop.com/api/v1")
 
 
 def _headers():
@@ -19,35 +21,34 @@ def _headers():
 
 
 def poll_orders(status: str = "paid") -> list[dict]:
-    """Return recent paid orders from Whop.
+    """Return the most recent payments for the business, filtered to `status`.
 
-    Response items include:
-      - id (whop order id)
-      - product_id
-      - user_id
-      - created_at
-      - metadata / custom fields (may contain 'topic')
-      - buyer email
+    Payment fields used: id, status, paid_at, created_at, metadata (may hold
+    'topic'), user {id, email}, product {id}.
     """
     resp = requests.get(
-        f"{WHOP_BASE}/orders",
+        f"{WHOP_BASE}/payments",
         headers=_headers(),
-        params={"business_id": WHOP_BUSINESS_ID, "status": status, "limit": 20},
+        params={"account_id": WHOP_BUSINESS_ID, "first": 20, "order": "created_at", "direction": "desc"},
         timeout=15,
     )
     resp.raise_for_status()
-    return resp.json().get("data", [])
+    return [p for p in resp.json().get("data", []) if p.get("status") == status]
 
 
 def get_order(order_id: str) -> dict:
-    """Fetch a single order by id."""
-    resp = requests.get(f"{WHOP_BASE}/orders/{order_id}", headers=_headers(), timeout=15)
+    """Fetch a single payment by id."""
+    resp = requests.get(f"{WHOP_BASE}/payments/{order_id}", headers=_headers(), timeout=15)
     resp.raise_for_status()
     return resp.json()
 
 
 def send_message(order_id: str, message: str) -> dict:
-    """Send a message to the buyer through Whop."""
+    """Send a message to the buyer through Whop.
+
+    Unverified endpoint: the fulfillment subprocess delivers through the Whop MCP
+    instead, so this is only used by agent/tools/deliver.py.
+    """
     resp = requests.post(
         f"{WHOP_BASE}/orders/{order_id}/message",
         headers=_headers(),
@@ -61,6 +62,6 @@ def send_message(order_id: str, message: str) -> dict:
 if __name__ == "__main__":
     # quick test
     orders = poll_orders()
-    print(f"Found {len(orders)} orders")
+    print(f"Found {len(orders)} paid payments ({WHOP_MODE})")
     for o in orders:
         print(f"  {o.get('id')} — status={o.get('status')} product={o.get('product_id')}")

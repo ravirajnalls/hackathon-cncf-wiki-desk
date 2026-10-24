@@ -14,7 +14,7 @@ import json
 import os
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -32,10 +32,15 @@ from agent.tools.compile_pages import _slugify
 from agent.tools.publish_wiki import get_page_url
 
 
+def order_topic(order: dict) -> str:
+    """Topic the buyer gave at checkout (Whop payment metadata may be null)."""
+    return ((order.get("metadata") or {}).get("topic") or "").strip()
+
+
 def build_fulfillment_prompt(order: dict) -> str:
     """Build the prompt for the Claude fulfillment subprocess."""
     whop_id = order.get("id", "unknown")
-    topic = order.get("metadata", {}).get("topic", "")
+    topic = order_topic(order)
     created_at = order.get("created_at", "")
     product_id = os.environ.get("WHOP_PRODUCT_ID", "prod_65oqcxlhZM93U")
     slug = _slugify(topic) if topic else ""
@@ -129,8 +134,8 @@ def spawn_claude_fulfillment(order: dict) -> dict:
 def fulfill_order(order: dict) -> dict:
     """Fulfill a single order: record, spawn Claude subprocess, track result."""
     whop_id = order.get("id", "")
-    topic = order.get("metadata", {}).get("topic", "")
-    paid_at = order.get("created_at", datetime.utcnow().isoformat())
+    topic = order_topic(order)
+    paid_at = order.get("paid_at") or order.get("created_at") or datetime.now(timezone.utc).isoformat()
 
     record_order(whop_id, topic or "unknown", paid_at)
     set_order_status(whop_id, "in_progress")
@@ -171,7 +176,7 @@ def should_fulfill(order: dict) -> bool:
     if row is None:
         return True
     if row["status"] == "awaiting_topic":
-        return bool(order.get("metadata", {}).get("topic"))
+        return bool(order_topic(order))
     # delivered, in_progress and failed orders are left alone; failed ones need a manual look
     return row["status"] == "pending"
 
@@ -184,7 +189,7 @@ def run_loop(poll_interval: int = 30):
         "All paid orders fulfilled autonomously",
     )
 
-    print(f"[{datetime.utcnow().isoformat()}] CNCF Wiki Desk orchestrator started")
+    print(f"[{datetime.now(timezone.utc).isoformat()}] CNCF Wiki Desk orchestrator started")
     print(f"  Polling Whop every {poll_interval}s")
     print(f"  Project: {PROJECT_ROOT}")
     print()
@@ -195,15 +200,15 @@ def run_loop(poll_interval: int = 30):
             paid = [o for o in orders if o.get("status") == "paid" and should_fulfill(o)]
 
             if paid:
-                print(f"  [{datetime.utcnow().strftime('%H:%M:%S')}] {len(paid)} new paid order(s)")
+                print(f"  [{datetime.now(timezone.utc).strftime('%H:%M:%S')}] {len(paid)} new paid order(s)")
                 for order in paid:
                     whop_id = order.get("id", "?")
-                    topic = order.get("metadata", {}).get("topic", "TBD")
+                    topic = order_topic(order) or "TBD"
                     print(f"    → Fulfilling {whop_id[:12]}... (topic: {topic})")
                     result = fulfill_order(order)
                     print(f"    ← Result: {result.get('status')}")
             else:
-                print(f"  [{datetime.utcnow().strftime('%H:%M:%S')}] No new orders", end="\r")
+                print(f"  [{datetime.now(timezone.utc).strftime('%H:%M:%S')}] No new orders", end="\r")
 
         except KeyboardInterrupt:
             print("\n\nShutting down...")
